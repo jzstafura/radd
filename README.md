@@ -23,10 +23,12 @@ for i, x in enumerate(y):
 > Code blocks without syntax highlighting are created by simply indenting (at least 8 spaces) 
 
 > For example, the following git commands are used for adding or deleting files in your local repo:
-	
-	> cp ../markdown/readme/README.md ./
-	> git add README.md
-	> git rm README.markdown
+
+>>	>> cp ../markdown/readme/README.md ./
+>>	>> git add README.md
+>>	>> git rm README.markdown
+
+* Pretty simple, huh? *
 
 
 ##Embedding links
