@@ -1,19 +1,15 @@
 #Description of RaDD: Race Against Drift-Diffusion model of response inhibition#
-__
 
-First Header  | Second Header
-------------- | -------------
-Content Cell  | Content Cell
-Content Cell  | Content Cell
 
-###Syntax highlighting w/ ruby
+##Code Block with Ruby Syntax Highlighting
 ```ruby
 require 'redcarpet'
 markdown = Redcarpet.new("Hello World!")
 puts markdown.to_html
 ```
 
-###Syntax highlighting w/ python
+
+##Code Block with Python Syntax Highlighting
 ```python
 x="Hello World"
 for i, x in enumerate(y):
@@ -21,12 +17,22 @@ for i, x in enumerate(y):
 	if x[i]==x[-1]:
 		print x
 ```
-	
-	Just indent to create a code block if you don't want syntax highlighting.
-	Otherwise, use the method above.
+
+
+##Code Block Without Syntax Highlighting	
+	Code blocks without syntax highlighting are created
+	by simply indenting (at least 8 spaces)
+
 
 ##Embedding links
 [Visit GitHub!](www.github.com).
+
+
+##Tables
+First Header  | Second Header
+------------- | -------------
+Content Cell  | Content Cell
+Content Cell  | Content Cell
 
 | Name | Description          |
 | ------------- | ----------- |
