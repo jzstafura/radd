@@ -1,9 +1,5 @@
-
 #Description of RaDD: Race Against Drift-Diffusion model of response inhibition#
-==
-
-require 'github/markup'
-GitHub::Markup.render(file, File.read(file)) 
+__
 
 First Header  | Second Header
 ------------- | -------------
