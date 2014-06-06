@@ -24,9 +24,9 @@ for i, x in enumerate(y):
 
 > For example, the following git commands are used for adding or deleting files in your local repo:
 	
-	cp ../markdown/readme/README.md ./
-	git add README.md
-	git rm README.markdown
+	> cp ../markdown/readme/README.md ./
+	> git add README.md
+	> git rm README.markdown
 
 
 ##Embedding links
