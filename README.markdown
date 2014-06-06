@@ -1,14 +1,15 @@
 #Description of RaDD: Race Against Drift-Diffusion model of response inhibition#
 
 
-####Code Block with Ruby Syntax Highlighting
+##Code Block with Ruby Syntax Highlighting
 ```ruby
 require 'redcarpet'
 markdown = Redcarpet.new("Hello World!")
 puts markdown.to_html
 ```
 
-####Code Block with Python Syntax Highlighting
+
+##Code Block with Python Syntax Highlighting
 ```python
 x="Hello World"
 for i, x in enumerate(y):
@@ -17,18 +18,17 @@ for i, x in enumerate(y):
 		print x
 ```
 
-####Code Block Without Syntax Highlighting	
+
+##Code Block Without Syntax Highlighting	
 	Code blocks without syntax highlighting are created
 	by simply indenting (at least 8 spaces)
 
 
-####Embedding links
-
+##Embedding links
 [Visit GitHub!](www.github.com).
 
 
-####Tables
-
+##Tables
 First Header  | Second Header
 ------------- | -------------
 Content Cell  | Content Cell
