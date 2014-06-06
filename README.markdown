@@ -1,5 +1,5 @@
 #Description of RaDD: Race Against Drift-Diffusion model of response inhibition#
-__
+_
 
 First Header  | Second Header
 ------------- | -------------
