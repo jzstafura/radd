@@ -1,7 +1,7 @@
-#Description of RaDD: Race Against Drift-Diffusion model of response inhibition#
+##Description of RaDD: Race Against Drift-Diffusion model of response inhibition#
 
 
-##Code Block with Ruby Syntax Highlighting
+###Code Block with Ruby Syntax Highlighting
 ```ruby
 require 'redcarpet'
 markdown = Redcarpet.new("Hello World!")
@@ -9,7 +9,7 @@ puts markdown.to_html
 ```
 
 
-##Code Block with Python Syntax Highlighting
+###Code Block with Python Syntax Highlighting
 ```python
 x="Hello World"
 for i, x in enumerate(y):
@@ -19,7 +19,7 @@ for i, x in enumerate(y):
 ```
 
 
-##Code Block Without Syntax Highlighting	
+###Code Block Without Syntax Highlighting	
 - Code blocks without syntax highlighting are created by simply indenting (at least 8 spaces) 
 
 - For example, the following git commands are used for adding or deleting files in your local repo
@@ -31,25 +31,28 @@ for i, x in enumerate(y):
 * Pretty simple, huh? 
 
 
-##Embedding links
+###Embedding links
 [Visit GitHub!](www.github.com).
 
 
-##Tables
+###Tables
 First Header  | Second Header
 ------------- | -------------
 Content Cell  | Content Cell
 Content Cell  | Content Cell
+
 
 | Name | Description          |
 | ------------- | ----------- |
 | Help      | Display the help window.|
 | Close     | Closes a window     |
 
+
 | Name | Description          |
 | ------------- | ----------- |
 | Help      | ~~Display the~~ help window.|
 | Close     | _Closes_ a window     |
+
 
 | Left-Aligned  | Center Aligned  | Right Aligned |
 | :------------ |:---------------:| -----:|
