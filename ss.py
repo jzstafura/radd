@@ -14,7 +14,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from vis2 import visualize_full
 from ssex import sim_ssex
 from ssex_onsets import sim_true_onsets
-
+sns.set(font="Helvetica")
 
 def set_model(gParams=None, sParams=None, ntrials=100, timebound=0.653, stb=.0001, task='ssRe', analyze=True, visual=True, animate=False, t_exp=False, true_onsets=False, exp_scale=[10, 10]):
 
@@ -263,7 +263,8 @@ def anl(df, task='ssRe'):
 def visualize_simple(df, pGo=0.5, timebound=0.653, task='ssRe', t_exp=False, exp_scale=[10,10], animate=False):
 
 	plt.ion()
-
+	sns.set(style='white', font="Helvetica")
+	
 	a=list(pd.Series(df['tparams']))[0]['a']
 	z=list(pd.Series(df['tparams']))[0]['z']
 	Ter=list(pd.Series(df['tparams']))[0]['Ter']

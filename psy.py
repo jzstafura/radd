@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.optimize
 import seaborn as sns
+sns.set(font="Helvetica")
 
 def sigmoid(p,x):
     x0,y0,c,k=p
@@ -26,7 +27,7 @@ def res(arr,lower=0.0,upper=1.0):
 def fit_scurves(ysim=None, task='ssRe', showPSE=True):
 	
 	plt.ion()
-	sns.set_style("white")
+	sns.set(style='white', font="Helvetica")
 	
 	if task=='ssRe':
 		x=np.array([400, 350, 300, 250, 200], dtype='float')
@@ -127,7 +128,7 @@ def fit_scurves(ysim=None, task='ssRe', showPSE=True):
 def plot_goRTs(sim_rt=None, task='ssRe'):
 	
 	plt.ion()
-	sns.set_style('white')
+	sns.set(style='white', font="Helvetica")
 	
 	x=np.array([1,2])
 	
@@ -168,8 +169,10 @@ def plot_goRTs(sim_rt=None, task='ssRe'):
 def plotPSE(ssPSE=None, task='ssRe'):
 	
 	plt.ion()
-	sns.set_style('white')
+	sns.set(style='white', font="Helvetica")
+	#sns.set_style('white')
 	
+
 	if task=='ssRe':
 		#emp_pse = np.array([.3491222879, .3614880328])	
 		emp_err = np.array([0.002834, 0.0027982])
@@ -203,9 +206,9 @@ def plotPSE(ssPSE=None, task='ssRe'):
 		ax.set_yticks(np.arange(.335, .375, .01))
 		ax.set_yticklabels(np.arange(.335, .375, .01), fontsize=14)
 	else:
-		ax.set_ylim(.35, .40)
-		ax.set_yticks(np.arange(.35, .41, .01))
-		ax.set_yticklabels(np.arange(.35, .41, .01), fontsize=14)
+		ax.set_ylim(.35, .42)
+		ax.set_yticks(np.arange(.35, .43, .01))
+		ax.set_yticklabels(np.arange(.35, .43, .01), fontsize=14)
 	
 	ax.set_ylabel('PSE', fontsize=18)
 	
