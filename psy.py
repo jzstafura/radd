@@ -212,6 +212,7 @@ def plotPSE(ssPSE=None, task='ssRe'):
 	
 	ax.set_ylabel('PSE', fontsize=18)
 	
+<<<<<<< HEAD
 	return f
 
 def scurves(ysim=None, task='ssRe', showPSE=True, ncurves=5):
@@ -295,3 +296,6 @@ def scurves(ysim=None, task='ssRe', showPSE=True, ncurves=5):
 		ssrtFig=plotPSE(ssPSE=ssPSE, task=task)
 
 	return ax
+=======
+	return f
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98

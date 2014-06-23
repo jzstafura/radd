@@ -2,10 +2,23 @@
 from __future__ import division
 import pandas as pd
 import numpy as np
+<<<<<<< HEAD
 import matplotlib.pyplot as plt
 import seaborn as sns
 from itertools import cycle
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+=======
+from matplotlib.lines import Line2D
+import matplotlib.pyplot as plt
+import seaborn as sns
+from itertools import cycle
+import time
+from matplotlib.pylab import subplots,close
+from matplotlib import cm
+from scipy import stats
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from vis2 import visualize_full
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 from ssex import sim_ssex
 from ssex_onsets import sim_true_onsets
 sns.set(font="Helvetica")
@@ -130,8 +143,13 @@ def set_model(gParams=None, sParams=None, ntrials=100, timebound=0.653, stb=.000
 	df_abr.to_csv("sims.csv", index=False)
 
 	if analyze:
+<<<<<<< HEAD
 		GoRT, pS, sAcc = anl(df_abr, task=task)
 		sim_data=[GoRT, pS, sAcc]
+=======
+		GoRT, pS = anl(df_abr, task=task)
+		sim_data=[GoRT, pS]
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 
 	if visual:
 		f=visualize_simple(df=df, pGo=sp['pGo'], timebound=timebound, t_exp=t_exp, exp_scale=exp_scale, task=task, animate=animate)
@@ -243,6 +261,7 @@ def anl(df, task='ssRe'):
 	#	rt_pivot=pd.pivot_table(df, values='rt', cols=['choice'], aggfunc=np.average)
 	#	acc_pivot=pd.pivot_table(df, values='acc', rows=['choice'], aggfunc=np.average)
 	
+<<<<<<< HEAD
 	#if task=='ssRe':
 	#	GoRT=df.ix[(df['trial_type']=='go')&(df['acc']==1), 'rt'].mean()
 	#	stopAcc=df.ix[(df['trial_type']=='stop'), 'acc'].mean()
@@ -255,6 +274,17 @@ def anl(df, task='ssRe'):
 	sAcc=df.ix[(df['trial_type']=='stop'), 'acc'].mean()
 	
 	return GoRT, pS, sAcc
+=======
+	if task=='ssRe':
+		GoRT=df.ix[(df['trial_type']=='go')&(df['acc']==1), 'rt'].mean()
+		pS=df.ix[(df['trial_type']=='stop'), 'acc'].mean()
+	
+	elif task=='ssPro':
+		GoRT=df.ix[(df['choice']=='go'), 'rt'].mean()
+		pS=len(df.ix[(df['choice']=='stop')])/len(df)
+	
+	return GoRT, pS
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 
 
 def visualize_simple(df, pGo=0.5, timebound=0.653, task='ssRe', t_exp=False, exp_scale=[10,10], animate=False):

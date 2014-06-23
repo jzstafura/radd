@@ -11,7 +11,11 @@
 			"file": "ss.py",
 			"settings":
 			{
+<<<<<<< HEAD
 				"buffer_size": 16957,
+=======
+				"buffer_size": 16984,
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 				"line_ending": "Unix"
 			}
 		},
@@ -19,7 +23,11 @@
 			"file": "psy.py",
 			"settings":
 			{
+<<<<<<< HEAD
 				"buffer_size": 8281,
+=======
+				"buffer_size": 6192,
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 				"line_ending": "Unix"
 			}
 		},
@@ -97,9 +105,12 @@
 	},
 	"file_history":
 	[
+<<<<<<< HEAD
 		"/Users/kyle/.matplotlib/matplotlibrc",
 		"/Users/kyle/Dropbox/git/radd/.git/config",
 		"/Users/kyle/Library/Application Support/Sublime Text 3/Packages/User/Side Bar.sublime-settings",
+=======
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 		"/Users/kyle/Library/Application Support/Sublime Text 3/Packages/User/Preferences.sublime-settings",
 		"/Users/kyle/Library/Application Support/Sublime Text 3/Packages/User/Default (OSX).sublime-keymap",
 		"/Users/kyle/Dropbox/git/radd/radd_project.sublime-project",
@@ -112,11 +123,19 @@
 		"/Users/kyle/Library/Application Support/Sublime Text 3/Packages/SideBarEnhancements/Default (OSX).sublime-keymap",
 		"/Users/kyle/.ipython/profile_default/ipython_notebook_config.py",
 		"/Applications/Calendar.app/Contents/Resources/Calendar.docktileplugin/Contents/Info.plist",
+<<<<<<< HEAD
+=======
+		"/Users/kyle/.matplotlib/matplotlibrc",
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 		"/Users/kyle/Dropbox/git/mydata/ss.py"
 	],
 	"find":
 	{
+<<<<<<< HEAD
 		"height": 37.0
+=======
+		"height": 23.0
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 	},
 	"find_in_files":
 	{
@@ -130,6 +149,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+<<<<<<< HEAD
 			"Light",
 			"make_axes",
 			"stats",
@@ -137,6 +157,8 @@
 			"subplots",
 			"Line2D",
 			"time",
+=======
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 			" ",
 			"git",
 			"Dropbox",
@@ -158,7 +180,11 @@
 	"groups":
 	[
 		{
+<<<<<<< HEAD
 			"selected": 3,
+=======
+			"selected": 4,
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 			"sheets":
 			[
 				{
@@ -167,19 +193,29 @@
 					"semi_transient": false,
 					"settings":
 					{
+<<<<<<< HEAD
 						"buffer_size": 16957,
+=======
+						"buffer_size": 16984,
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
+<<<<<<< HEAD
 								810,
 								810
+=======
+								503,
+								503
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 							]
 						],
 						"settings":
 						{
+<<<<<<< HEAD
 							"SideBarAutoAddFoldersForOpenedFiles": 1,
 							"syntax": "Packages/Python/Python.tmLanguage",
 							"translate_tabs_to_spaces": false,
@@ -190,6 +226,16 @@
 						"zoom_level": 1.0
 					},
 					"stack_index": 2,
+=======
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 96.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 					"type": "text"
 				},
 				{
@@ -198,15 +244,24 @@
 					"semi_transient": false,
 					"settings":
 					{
+<<<<<<< HEAD
 						"buffer_size": 8281,
+=======
+						"buffer_size": 6192,
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
+<<<<<<< HEAD
 								4747,
 								4747
+=======
+								133,
+								133
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 							]
 						],
 						"settings":
@@ -215,7 +270,11 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
+<<<<<<< HEAD
 						"translation.y": 219.0,
+=======
+						"translation.y": 0.0,
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 						"zoom_level": 1.0
 					},
 					"stack_index": 3,
@@ -234,8 +293,13 @@
 						"selection":
 						[
 							[
+<<<<<<< HEAD
 								161,
 								161
+=======
+								134,
+								134
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 							]
 						],
 						"settings":
@@ -247,7 +311,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
+<<<<<<< HEAD
 					"stack_index": 4,
+=======
+					"stack_index": 1,
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 					"type": "text"
 				},
 				{
@@ -263,8 +331,13 @@
 						"selection":
 						[
 							[
+<<<<<<< HEAD
 								0,
 								0
+=======
+								264,
+								264
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 							]
 						],
 						"settings":
@@ -276,7 +349,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
+<<<<<<< HEAD
 					"stack_index": 0,
+=======
+					"stack_index": 2,
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 					"type": "text"
 				},
 				{
@@ -304,7 +381,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
+<<<<<<< HEAD
 					"stack_index": 1,
+=======
+					"stack_index": 0,
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 					"type": "text"
 				}
 			]
@@ -389,7 +470,11 @@
 	"show_minimap": true,
 	"show_open_files": false,
 	"show_tabs": true,
+<<<<<<< HEAD
 	"side_bar_visible": false,
+=======
+	"side_bar_visible": true,
+>>>>>>> 0b24e7daabddeee9d84e3b25ed3fee4e3fd08c98
 	"side_bar_width": 204.0,
 	"status_bar_visible": true,
 	"template_settings":
