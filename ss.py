@@ -19,16 +19,16 @@ def set_model(gParams=None, sParams=None, ntrials=100, timebound=0.653, stb=.000
 	gen_model: instantiates ddm parameters and call simulation routine-->sim()
 
 	args:
-		:default (Bool):		instantiate model with default parameters (Matzke & Wagenmakers, 2009)
-
-										a=0.125 	# a:    upper boundary (lower boundary is 0)
-										z=0.063		# z:    starting point
-										nu=0.223 	# nu: 	mean drift rate
-										Ter=0.435 	# Ter:	non-decisional time
-										eta=0.133 	# eta:	variability in drift rate from trial to trial
-										st=0.183  	# st:	variabilit in TR from trial to trial
-										sz=0.037  	# sz: 	variability in starting point from trial to trial
-										s2=.01  	# s2: 	diffusion coeffient is the amount of within-trial noise
+		:default (Bool):		instantiate model with default parameters (Matzke & Wagenmakers, 2009):
+							
+							a:   .125  upper boundary (lower boundary is 0)
+							z:   .063  starting point
+							nu:  .223  mean drift rate
+							Ter: .435  non-decisional time
+							eta: .133  variability in drift rate from trial to trial
+							st:  .183  variabilit in TR from trial to trial
+							sz:  .037  variability in starting point from trial to trial
+							s2:  .01   diffusion coeffient is the amount of within-trial noise
 
 		:plist (list):			list of dictionaries specifying parameters for choice 1 & choice 2
 		:visual (Bool):			plot DDM traces with RT distributions on a/b boundaries
@@ -38,27 +38,27 @@ def set_model(gParams=None, sParams=None, ntrials=100, timebound=0.653, stb=.000
 		df (pd.DataFrame):		df containing trial-wise results of simulations
 								columns=['trial', 'rt', 'choice']
 
-	__________________PROACTIVE BSL________________ 		_________________PROACTIVE PNL_________________
+	_____________________PROACTIVE BSL_____________________ 			_____________________PROACTIVE PNL_____________________
 
 	SSD = 450ms
 	Target Onset = 500ms
 
-                   P(STOP)		              GO RTs
-	  p(Go=100) =  0.0046		p(Go=100) =  529.972
-	  p(Go=80)  =  0.0344       p(Go=80)  =  534.083
-	  p(Go=60)  =  0.2401       p(Go=60)  =  542.921
-	  p(Go=40)  =  0.4713       p(Go=40)  =  544.319
-	  p(Go=20)  =  0.7438       p(Go=20)  =  545.429
-	  p(Go=0)   =  0.9307		p(Go=0)   =  N/A
+                     P(STOP)		              GO RTs
+	p(Go=100) =  0.0046		p(Go=100) =  529.972
+	p(Go=80)  =  0.0344       	p(Go=80)  =  534.083
+	p(Go=60)  =  0.2401       	p(Go=60)  =  542.921
+	p(Go=40)  =  0.4713       	p(Go=40)  =  544.319
+	p(Go=20)  =  0.7438       	p(Go=20)  =  545.429
+	p(Go=0)   =  0.9307		p(Go=0)   =  N/A
 
 
-	_________________REACTIVE BSL_________________ 			_________________REACTIVE PNL_________________
+	_____________________REACTIVE BSL_____________________ 				_____________________REACTIVE PNL_____________________
 
-    SSD_200 = 0.994        Mean SSRT = 150.877 ms			SSD_200 = 0.993			Mean SSRT = 138.512 ms
-    SSD_250 = 0.982        Mean GoRT = 565.625 ms			SSD_250 = 0.985			Mean GoRT = 573.414769
-    SSD_300 = 0.896                 						SSD_300 = 0.925
-    SSD_350 = 0.504                 						SSD_350 = 0.594
-    SSD_400 = 0.103                 						SSD_400 = 0.181
+    	SSD_200 = 0.994        		Mean SSRT = 150.877 ms				SSD_200 = 0.993			Mean SSRT = 138.512 ms
+    	SSD_250 = 0.982        		Mean GoRT = 565.625 ms				SSD_250 = 0.985			Mean GoRT = 573.414769
+    	SSD_300 = 0.896                 						SSD_300 = 0.925
+	SSD_350 = 0.504                 						SSD_350 = 0.594
+    	SSD_400 = 0.103                 						SSD_400 = 0.181
 
 
 	"""
@@ -66,7 +66,7 @@ def set_model(gParams=None, sParams=None, ntrials=100, timebound=0.653, stb=.000
 	ss_bool=False
 
 	if gParams is None:
-		gp={'a':0.24, 'z':0.12, 'v':0.20, 'Ter':0.150, 'eta':0.01, 'st':0.0183, 'sz':0.0137, 's2':.01}
+		gp={'a':0.125, 'z':0.063, 'v':0.223, 'Ter':0.435, 'eta':0.133, 'st':0.183, 'sz':0.037, 's2':.01}
 	else:
 		gp=gParams
 
@@ -236,22 +236,6 @@ def sim_ss(mu, s2, TR, a, z, mu_ss=-6, ssd=.450, timebound=0.653, ss_trial=False
 
 
 def anl(df, task='ssRe'):
-	
-	#if task=='ssRe':
-		#df_acc=df[df['acc']==1]
-		#rt_pivot=pd.pivot_table(df_acc, values='rt', cols=['trial_type'], aggfunc=np.average)
-		#acc_pivot=pd.pivot_table(df, values='acc', rows=['trial_type'], aggfunc=np.average)
-	
-	#elif task=='ssPro':
-	#	rt_pivot=pd.pivot_table(df, values='rt', cols=['choice'], aggfunc=np.average)
-	#	acc_pivot=pd.pivot_table(df, values='acc', rows=['choice'], aggfunc=np.average)
-	
-	#if task=='ssRe':
-	#	GoRT=df.ix[(df['trial_type']=='go')&(df['acc']==1), 'rt'].mean()
-	#	stopAcc=df.ix[(df['trial_type']=='stop'), 'acc'].mean()
-	#
-	#elif task=='ssPro':
-	#GoRT=df.ix[(df['choice']=='go'), 'rt'].mean()
 	
 	GoRT=df.ix[(df['trial_type']=='go')&(df['acc']==1), 'rt'].mean()
 	pS=len(df.ix[(df['choice']=='stop')])/len(df)

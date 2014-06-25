@@ -8,13 +8,16 @@ import scipy.optimize
 import seaborn as sns
 sns.set(font="Helvetica")
 
+
 def sigmoid(p,x):
     x0,y0,c,k=p
     y = c / (1 + np.exp(k*(x-x0))) + y0
     return y
 
+
 def residuals(p,x,y):
     return y - sigmoid(p,x)
+
 
 def res(arr,lower=0.0,upper=1.0):
     arr=arr.copy()
@@ -23,6 +26,7 @@ def res(arr,lower=0.0,upper=1.0):
     arr *= (upper-lower)/arr.max()
     arr += lower
     return arr
+
 
 def fit_scurves(ysim=None, task='ssRe', showPSE=True):
 	
@@ -161,7 +165,6 @@ def plot_goRTs(sim_rt=None, task='ssRe'):
 	ax.set_yticklabels(np.arange(ylim[0], ylim[1]+.005, .005), fontsize=14)
 	ax.set_ylabel('Go RT (ms)', fontsize=18)
 	
-	
 	ax.set_xlim(0.5, 2.5)
 	ax.set_xticks(x)
 	ax.set_xticklabels(['BSL', 'PNL'], fontsize=18)
@@ -214,84 +217,82 @@ def plotPSE(ssPSE=None, task='ssRe'):
 
 	return f
 
-def scurves(ysim=None, task='ssRe', showPSE=True, ncurves=5):
+
+def scurves(ysim=None, task='ssRe', showPSE=True, ncurves=5, labels=None):
 	
 	plt.ion()
 	sns.set(style='white', font="Helvetica")
+	npoints=len(ysim[0])
+	scale_factor=10
+	x=np.array(np.linspace(0, 100, npoints), dtype='float')
+	xsim=np.linspace(-5, 120, 10000)
+	xxticks=x/scale_factor
+	xxticklabels=x/100
+	xxlim=(-1.5, 11.5)
+	xxlabel='P(Go)'
 	
 	if task=='ssRe':
-		x=np.array([400, 350, 300, 250, 200], dtype='float')
-		xsim=np.linspace(15, 50, 10000)
-		xxlim=(18, 45)
-		xxlabel='SSD (ms)'
-		xxticks=np.arange(20, 45, 5)
+		xxlabel='SSD'
+		xxticks=x/scale_factor
+		print xxticks
 		xxticklabels=np.arange(200, 450, 50)
-		scale_factor=100
-	else:
-		x=np.array([100, 80, 60, 40, 20, 0], dtype='float')
-		xsim=np.linspace(-5, 10, 10000)
-		xxlim=(-1.5, 11.5)
-		xxlabel='P(Go)'
-		xxticks=np.arange(0, 12, 2)
-		xxticklabels=np.arange(0, 1.2, .20)
-		scale_factor=10
 	
 	x=res(-x,lower=x[-1]/10, upper=x[0]/10)
-	#ydata=res(ydata, lower=ydata[-1], upper=ydata[0])
 	
 	pse=[]
-	
 	f = plt.figure(figsize=(6,7.5)) 
+	f.subplots_adjust(top=0.90, wspace=0.12, left=0.18, right=0.95, bottom=0.10)
 	ax = f.add_subplot(111)
+
 	sns.despine()
 	
-	#colors=['MediumBlue', '#E60000', '#1975FF', '#E6005C']#'#1975FF', '#FF0066']
-	colors = sns.blend_palette(["#2C2C2C", "GhostWhite"], len(ysim))
-	#label_list=['EmpBSL','EmpPNL', 'SimBSL', 'SimPNL']
+	colors = sns.blend_palette(["LimeGreen", "Navy"], len(ysim))
 	
-	for yi in ysim:
+	if labels!=None:
+		labels=labels
+	else:
+		labels=['C'+str(i) for i in range(len(ysim))]
+	
+	for i, yi in enumerate(ysim):
 
-		y=res(y, lower=yi[-1], upper=yi[0])
-		
-		#print(x)
-		#print(y)
-		
+		y=res(yi, lower=yi[-1], upper=yi[0])
+
 		p_guess=(np.median(x),np.median(y),1.0,1.0)
 		p, cov, infodict, mesg, ier = scipy.optimize.leastsq(
-		    residuals,p_guess,args=(x,y),full_output=1)#,warning=True)  
+		    residuals,p_guess,args=(x,y),full_output=1)
     	
 		x0,y0,c,k=p
-		#print('''\
-		#x0 = {x0}
-		#y0 = {y0}
-		#c = {c}
-		#k = {k}
-		#'''.format(x0=x0,y0=y0,c=c,k=k))
 		
 		xp = xsim 
 		pxp=sigmoid(p,xp)
 		idx = (np.abs(pxp - .5)).argmin()
-		print "PSE = %s\n" % (str(xp[idx]*scale_factor)[:05])
 		
 		# Plot the results
-		ax.plot(xp, pxp, '-', lw=6, color=colors[i], alpha=.5, label=label_list[i])
+		ax.plot(xp, pxp, '-', lw=6, color=colors[i], alpha=.5, label=labels[i])
 		ax.plot(x, y, marker='o', color=colors[i], ms=10, lw=0)
+		
 		pse.append(xp[idx]/scale_factor)
 
-	if task=='ssRe':
-		ax.set_xlim(xxlim)
-		ax.set_xlabel(xxlabel, fontsize=24)
-		ax.set_xticks(xxticks)
-		ax.set_xticklabels(xxticklabels, fontsize=18)
-	
+	#if showPSE:
+		#return pse
+
+	ax.set_xlim(xxlim)
+	ax.set_xlabel(xxlabel, fontsize=24)
+	ax.set_xticks(xxticks)
+	ax.set_xticklabels(xxticklabels, fontsize=18)
 	ax.set_ylim(0, 1.05)	
-	plt.setp(ax.get_yticklabels(), fontsize=18)	
-	ax.set_ylabel('P(Stop)', fontsize=24, labelpad=14) 
-	ax.legend(loc=0, fontsize=18)
-	plt.savefig("evs_stopsigmoid.png", format='png', dpi=600)
-
 	
-	if showPSE:
-		ssrtFig=plotPSE(ssPSE=ssPSE, task=task)
+	plt.setp(ax.get_yticklabels(), fontsize=18)	
+	ax.set_ylabel('P(Stop)', fontsize=24, labelpad=11) 
+	ax.legend(loc=0, fontsize=18)
+	plt.savefig("evs_stopsigmoid.png", format='png', dpi=600)	
+	#if showPSE:
+	#	ssrtFig=plotPSE(ssPSE=ssPSE, task=task)
+	
+	pse=pse
+	
+	return pse
 
-	return ax
+
+
+
