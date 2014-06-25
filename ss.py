@@ -35,29 +35,6 @@ def set_model(gParams=None, sParams=None, ntrials=100, timebound=0.653, stb=.000
 		df (pd.DataFrame):		df containing trial-wise results of simulations
 								columns=['trial', 'rt', 'choice']
 
-	_____________________PROACTIVE BSL_____________________ 			_____________________PROACTIVE PNL_____________________
-
-	SSD = 450ms
-	Target Onset = 500ms
-
-                     P(STOP)		              GO RTs
-	p(Go=100) =  0.0046		p(Go=100) =  529.972
-	p(Go=80)  =  0.0344       	p(Go=80)  =  534.083
-	p(Go=60)  =  0.2401       	p(Go=60)  =  542.921
-	p(Go=40)  =  0.4713       	p(Go=40)  =  544.319
-	p(Go=20)  =  0.7438       	p(Go=20)  =  545.429
-	p(Go=0)   =  0.9307		p(Go=0)   =  N/A
-
-
-	_____________________REACTIVE BSL_____________________ 				_____________________REACTIVE PNL_____________________
-
-    	SSD_200 = 0.994        		Mean SSRT = 150.877 ms				SSD_200 = 0.993			Mean SSRT = 138.512 ms
-    	SSD_250 = 0.982        		Mean GoRT = 565.625 ms				SSD_250 = 0.985			Mean GoRT = 573.414769
-    	SSD_300 = 0.896                 						SSD_300 = 0.925
-	SSD_350 = 0.504                 						SSD_350 = 0.594
-    	SSD_400 = 0.103                 						SSD_400 = 0.181
-
-
 	"""
 
 	ss_bool=False
@@ -102,13 +79,16 @@ def set_model(gParams=None, sParams=None, ntrials=100, timebound=0.653, stb=.000
 		sp['ss_On'] = sp['ssd'] + (sp['ssTer_lo'] + np.random.uniform() * (sp['ssTer_hi'] - sp['ssTer_lo']))
 
 		if t_exp and true_onsets:
-			rt, choice, path, tsteps = sim_true_onsets(gp['mu'],gp['s2'],gp['TR'],gp['a'],gp['ZZ'], mu_ss=sp['mu_ss'], ssd=sp['ss_On'], timebound=tb, exp_scale=exp_scale, ss_trial=ss_bool)
+			rt, choice, path, tsteps = sim_true_onsets(gp['mu'],gp['s2'],gp['TR'],gp['a'],gp['ZZ'], mu_ss=sp['mu_ss'], 
+				ssd=sp['ss_On'], timebound=tb, exp_scale=exp_scale, ss_trial=ss_bool)
 		
 		elif t_exp:
-			rt, choice, path, tsteps = sim_ssex(gp['mu'],gp['s2'],gp['TR'],gp['a'],gp['ZZ'], mu_ss=sp['mu_ss'], ssd=sp['ss_On'], timebound=tb, exp_scale=exp_scale, ss_trial=ss_bool)
+			rt, choice, path, tsteps = sim_ssex(gp['mu'],gp['s2'],gp['TR'],gp['a'],gp['ZZ'], mu_ss=sp['mu_ss'], 
+				ssd=sp['ss_On'], timebound=tb, exp_scale=exp_scale, ss_trial=ss_bool)
 
 		else:
-			rt, choice, path, tsteps = sim_ss(gp['mu'],gp['s2'],gp['TR'],gp['a'],gp['ZZ'], mu_ss=sp['mu_ss'], ssd=sp['ss_On'], timebound=tb, ss_trial=ss_bool)
+			rt, choice, path, tsteps = sim_ss(gp['mu'],gp['s2'],gp['TR'],gp['a'],gp['ZZ'], mu_ss=sp['mu_ss'], 
+				ssd=sp['ss_On'], timebound=tb, ss_trial=ss_bool)
 
 		go_paths_list.append(path[0]); go_tsteps_list.append(tsteps[0]); len_go_tsteps=len(tsteps[0])
 		ss_paths_list.append(path[1]); ss_tsteps_list.append(tsteps[1]); len_ss_tsteps=len(tsteps[1])
@@ -121,9 +101,10 @@ def set_model(gParams=None, sParams=None, ntrials=100, timebound=0.653, stb=.000
 		rt_list.append(rt); choice_list.append(choice); trial_params_list.append(gp); acc_list.append(acc);
 		len_go_tsteps_list.append(len_go_tsteps); len_ss_tsteps_list.append(len_ss_tsteps); trial_type_list.append(trial_type)
 
-	df=pd.DataFrame({"trial":np.arange(ntrials), "rt":rt_list, "choice":choice_list, "acc":acc_list, "go_tsteps": go_tsteps_list, "go_paths":go_paths_list,
-	"ss_tsteps":ss_tsteps_list, "ss_paths":ss_paths_list, "tparams":trial_params_list, "len_go_tsteps":len_go_tsteps_list, "len_ss_tsteps":len_ss_tsteps_list,
-	"trial_type":trial_type_list})
+	df=pd.DataFrame({"trial":np.arange(ntrials), "rt":rt_list, "choice":choice_list, "acc":acc_list, 
+		"go_tsteps": go_tsteps_list, "go_paths":go_paths_list, "ss_tsteps":ss_tsteps_list, 
+		"ss_paths":ss_paths_list, "tparams":trial_params_list, "len_go_tsteps":len_go_tsteps_list, 
+		"len_ss_tsteps":len_ss_tsteps_list, "trial_type":trial_type_list})
 
 	#df=remove_outliers(df)
 	df_abr=df.drop(['go_tsteps', 'go_paths', 'ss_tsteps', 'ss_paths'], axis=1)
