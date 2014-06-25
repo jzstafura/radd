@@ -6,9 +6,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from itertools import cycle
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-import matplotlib.pyplot as plt
-import seaborn as sns
-from itertools import cycle
 from ssex import sim_ssex
 from ssex_onsets import sim_true_onsets
 sns.set(font="Helvetica")
