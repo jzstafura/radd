@@ -56,7 +56,8 @@ def fit_scurves(ysim=None, task='ssRe', showPSE=True):
 		
 	ys=[ydata[0], ydata[1], ysim[0], ysim[1]]
 	
-	f = plt.figure(figsize=(6,7.5)) 
+	f = plt.figure(figsize=(7.5,7.5)) 
+	f.subplots_adjust(top=0.95, wspace=0.12, left=0.19, right=0.98, bottom=0.15)
 	ax = f.add_subplot(111)
 	sns.despine()
 	
@@ -87,19 +88,16 @@ def fit_scurves(ysim=None, task='ssRe', showPSE=True):
 		pxp=sigmoid(p,xp)
 		idx = (np.abs(pxp - .5)).argmin()
 		
-		if task=='ssRe':
-			print "%s PSE = %s\n" % (label_list[i], str(xp[idx]*scale_factor)[:05])
-		else:
-			print "%s PSE = %s\n" % (label_list[i], str(xp[idx]*scale_factor)[:05])
+		print "%s PSE = %s\n" % (label_list[i], str(xp[idx]*scale_factor)[:05])
 		
 		# Plot the results
 		if i==2 or i==3:
 			ax.plot(xp, pxp, '--', lw=4.5, color=colors[i], label=label_list[i])
-			ax.plot(x, y, marker='o', color=colors[i], ms=18, lw=0, mfc='none', mew=2.4, mec=colors[i], alpha=.3)
+			ax.plot(x, y, marker='o', color=colors[i], ms=20, lw=0, mfc='none', mew=2.4, mec=colors[i], alpha=.3)
 			simPSE.append(xp[idx]/scale_factor)
 			
 		else:
-			ax.plot(xp, pxp, '-', lw=6, color=colors[i], alpha=.39, label=label_list[i])
+			ax.plot(xp, pxp, '-', lw=8, color=colors[i], alpha=.39, label=label_list[i])
 			ax.plot(x, y, marker='o', color=colors[i], ms=9, lw=0)
 			empPSE.append(xp[idx]/scale_factor)
 			
@@ -110,20 +108,27 @@ def fit_scurves(ysim=None, task='ssRe', showPSE=True):
 	
 	if task=='ssRe':
 		ax.set_xlim(18, 45)
-		ax.set_xlabel('SSD (ms)', fontsize=24)
+		ax.set_xlabel('SSD (ms)', fontsize=28)
 		ax.set_xticks(np.arange(20, 45, 5))
-		ax.set_xticklabels(np.arange(200, 450, 50), fontsize=18)
+		ax.set_xticklabels(np.arange(200, 450, 50), fontsize=24)
 	else:
 		ax.set_xlim(-1.5, 11.5)
-		ax.set_xlabel('P(Go)', fontsize=24)
+		ax.set_xlabel('P(Go)', fontsize=28)
 		ax.set_xticks(np.arange(0, 12, 2))
-		ax.set_xticklabels(np.arange(0, 1.2, .20), fontsize=18)
-		
-	plt.setp(ax.get_yticklabels(), fontsize=18)	
-	ax.set_ylabel('P(Stop)', fontsize=24, labelpad=14) 
-	ax.legend(loc=0, fontsize=18)
-	plt.savefig("evs_stopsigmoid.png", format='png', dpi=600)
+		ax.set_xticklabels(np.arange(0, 1.2, .20), fontsize=24)
+	
+	ax.set_ylim(0, 1.05)	
+	ax.set_yticks(np.arange(0, 1.2, .2))	
+	plt.setp(ax.get_yticklabels(), fontsize=24)	
+	ax.set_ylabel('P(Stop)', fontsize=28, labelpad=10) 
+	ax.legend(loc=0, fontsize=24)
+	
+	yy, locs = plt.yticks()
+	ll = ['%.2f' % a for a in yy]
+	plt.yticks(yy, ll)
 
+	plt.savefig("stopsigmoid_%s%s" % (task, ".png"), format='png', dpi=600)
+	f.savefig("stopsigmoid_%s%s" % (task, ".svg"), rasterized=True, dpi=600)
 	
 	if showPSE:
 		ssrtFig=plotPSE(ssPSE=ssPSE, task=task)
@@ -137,18 +142,23 @@ def plot_goRTs(sim_rt=None, task='ssRe'):
 	x=np.array([1,2])
 	
 	if task=='ssRe':
-		emp_rt = np.array([0.565625, 0.573415])	
-		emp_err = np.array([.0029, .0024])
-		ylim=[.55, .580]
+		emp_rt = np.array([565.625, 573.415])	
+		emp_err = np.array([2.9, 2.4])
+		ylim=[550, 580]
+		inc=10
 	elif task=='ssPro':
-		emp_rt = np.array([.539154, .539344])
-		emp_err = np.array([.001, .001])
-		ylim=[.530, .540]
+		emp_rt = np.array([539.154, 539.344])
+		emp_err = np.array([1.0, 1.0])
+		ylim=[530, 545]
+		inc=5
 	if sim_rt is None:
 		sim_rt = emp_rt
-		
+	
+	if sim_rt[0]<1:
+		sim_rt=np.array([rt*1000 for rt in sim_rt])
 
-	f = plt.figure(figsize=(4, 5)) 
+	f = plt.figure(figsize=(5.5, 6.5)) 
+	f.subplots_adjust(top=0.95, wspace=0.12, left=0.23, right=0.97, bottom=0.10)
 	ax = f.add_subplot(111)
 	sns.despine()
 	
@@ -157,17 +167,24 @@ def plot_goRTs(sim_rt=None, task='ssRe'):
 	barlist=filter(lambda x: isinstance(x, matplotlib.patches.Rectangle), childrenLS)
 	barlist[1].set_color('#E60000')
 	
-	ax.plot(x[0], sim_rt[0], color='#1975FF', marker='o', ms=16, lw=0, alpha=.8, mew=2, mec='Navy')
+	ax.plot(x[0], sim_rt[0], color='#1975FF', marker='o', ms=22, lw=0, alpha=.85, mew=2, mec='Navy')
 	#ax.plot(x[1], sim_rt[1], color='#FF4D94', marker='o', ms=16, lw=0, alpha=.85)
-	ax.plot(x[1], sim_rt[1], color='#E6005C', marker='o', ms=16, lw=0, alpha=.8, mew=2, mec='FireBrick')
+	ax.plot(x[1], sim_rt[1], color='#E6005C', marker='o', ms=22, lw=0, alpha=.85, mew=2, mec='FireBrick')
 	ax.set_ylim(ylim[0], ylim[1])	
-	ax.set_yticks(np.arange(ylim[0], ylim[1]+.005, .005))
-	ax.set_yticklabels(np.arange(ylim[0], ylim[1]+.005, .005), fontsize=14)
-	ax.set_ylabel('Go RT (ms)', fontsize=18)
+	ax.set_yticks(np.arange(ylim[0], ylim[1]+inc, inc))
+	ax.set_yticklabels(np.arange(ylim[0], ylim[1]+inc, inc), fontsize=24)
+	ax.set_ylabel('Go RT (ms)', fontsize=30)
 	
 	ax.set_xlim(0.5, 2.5)
 	ax.set_xticks(x)
-	ax.set_xticklabels(['BSL', 'PNL'], fontsize=18)
+	ax.set_xticklabels(['BSL', 'PNL'], fontsize=28)
+
+	#yy, locs = plt.yticks()
+	#ll = ['%.3f' % a for a in yy]
+	#plt.yticks(yy, ll)
+
+	plt.savefig("GoRT_%s%s" % (task, ".png"), format='png', dpi=600)
+	f.savefig("GoRT_%s%s" % (task, ".svg"), rasterized=True, dpi=600)
 	
 def plotPSE(ssPSE=None, task='ssRe'):
 	
@@ -177,16 +194,17 @@ def plotPSE(ssPSE=None, task='ssRe'):
 	
 
 	if task=='ssRe':
-		#emp_pse = np.array([.3491222879, .3614880328])	
+		emp_pse = np.array([[.3491222879, .3614880328],[.3491222879, .3614880328]])	
 		emp_err = np.array([0.002834, 0.0027982])
 	else:
-		#emp_pse=np.array([0.380, 0.387])
+		emp_pse=np.array([0.380, 0.387])
 		emp_err=np.array([0.009, 0.009])
 
 	if ssPSE is None:
 		ssPSE = emp_pse
 		
-	f = plt.figure(figsize=(4, 5)) 
+	f = plt.figure(figsize=(5.5, 6.5)) 
+	f.subplots_adjust(top=0.95, wspace=0.12, left=0.23, right=0.97, bottom=0.10)
 	ax = f.add_subplot(111)
 	sns.despine()
 	
@@ -197,24 +215,31 @@ def plotPSE(ssPSE=None, task='ssRe'):
 	barlist[1].set_color('#E60000')
 	
 	#ax.plot(x, np.array(ssPSE[1]), color='k', marker='o', ms=10, lw=0)'#1975FF', '#E6005C'
-	ax.plot(x[0], np.array(ssPSE[1])[0], color='#1975FF', marker='o', ms=16, lw=0, alpha=.8, mew=2, mec='Navy')
+	ax.plot(x[0], np.array(ssPSE[1])[0], color='#1975FF', marker='o', ms=22, lw=0, alpha=.85, mew=2, mec='Navy')
 	#ax.plot(x[1], np.array(ssPSE[1])[1], color='#FF4D94', marker='o', ms=16, lw=0, alpha=.85)
-	ax.plot(x[1], np.array(ssPSE[1])[1], color='#E6005C', marker='o', ms=16, lw=0, alpha=.8, mew=2, mec='FireBrick')
+	ax.plot(x[1], np.array(ssPSE[1])[1], color='#E6005C', marker='o', ms=22, lw=0, alpha=.85, mew=2, mec='FireBrick')
 	ax.set_xticks(x)
-	ax.set_xticklabels(['BSL', 'PNL'], fontsize=18)
+	ax.set_xticklabels(['BSL', 'PNL'], fontsize=28)
 	ax.set_xlim(0.5, 2.5)
 	
 	if task=='ssRe':
 		ax.set_ylim(.335, .365)
 		ax.set_yticks(np.arange(.335, .375, .01))
-		ax.set_yticklabels(np.arange(.335, .375, .01), fontsize=14)
+		ax.set_yticklabels(np.arange(.335, .375, .01), fontsize=24)
 	else:
 		ax.set_ylim(.35, .42)
 		ax.set_yticks(np.arange(.35, .43, .01))
-		ax.set_yticklabels(np.arange(.35, .43, .01), fontsize=14)
+		ax.set_yticklabels(np.arange(.35, .43, .01), fontsize=24)
 	
-	ax.set_ylabel('PSE', fontsize=18)
+	ax.set_ylabel('PSE', fontsize=30)
+	
+	yy, locs = plt.yticks()
+	ll = ['%.2f' % a for a in yy]
+	plt.yticks(yy, ll)
 
+	plt.savefig("pse_%s%s" % (task, ".png"), format='png', dpi=600)
+	f.savefig("pse_%s%s" % (task, ".svg"), rasterized=True, dpi=600)
+	
 	return f
 
 
@@ -277,15 +302,18 @@ def scurves(ysim=None, task='ssRe', showPSE=True, ncurves=5, labels=None):
 		#return pse
 
 	ax.set_xlim(xxlim)
-	ax.set_xlabel(xxlabel, fontsize=24)
+	ax.set_xlabel(xxlabel, fontsize=28)
 	ax.set_xticks(xxticks)
-	ax.set_xticklabels(xxticklabels, fontsize=18)
+	ax.set_xticklabels(xxticklabels, fontsize=20)
 	ax.set_ylim(0, 1.05)	
 	
-	plt.setp(ax.get_yticklabels(), fontsize=18)	
-	ax.set_ylabel('P(Stop)', fontsize=24, labelpad=11) 
-	ax.legend(loc=0, fontsize=18)
-	plt.savefig("evs_stopsigmoid.png", format='png', dpi=600)	
+	plt.setp(ax.get_yticklabels(), fontsize=20)	
+	ax.set_ylabel('P(Stop)', fontsize=28, labelpad=11) 
+	ax.legend(loc=0, fontsize=22)
+	
+	plt.savefig("scurves_%s%s" % (task, ".png"), format='png', dpi=600)
+	f.savefig("scurves_%s%s" % (task, ".svg"), rasterized=True, dpi=600)	
+	
 	#if showPSE:
 	#	ssrtFig=plotPSE(ssPSE=ssPSE, task=task)
 	

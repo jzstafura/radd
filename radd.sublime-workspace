@@ -23,7 +23,7 @@
 			"file": "ss.py",
 			"settings":
 			{
-				"buffer_size": 16379,
+				"buffer_size": 15454,
 				"line_ending": "Unix"
 			}
 		},
@@ -101,10 +101,14 @@
 	},
 	"file_history":
 	[
+		"/Users/kyle/Dropbox/git/radd/radd.sublime-project",
+		"/Users/kyle/Dropbox/git/pynb/.gitignore",
+		"/Users/kyle/.gitconfig",
+		"/Users/kyle/.gitignore_global",
+		"/Users/kyle/.ipython/profile_default/ipython_notebook_config.py",
 		"/Users/kyle/Library/Application Support/Sublime Text 3/Packages/User/Preferences.sublime-settings",
 		"/Users/kyle/Dropbox/git/myhddm/sims.py",
 		"/Users/kyle/Dropbox/git/myhddm/vis.py",
-		"/Users/kyle/.ipython/profile_default/ipython_notebook_config.py",
 		"/Users/kyle/.gitignore",
 		"/Users/kyle/Dropbox/git/raddCoAx/.DS_Store",
 		"/Users/kyle/Dropbox/git/raddCoAx/.git/config",
@@ -139,6 +143,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"/",
 			"re_sacc",
 			"re_sp",
 			"re_rt",
@@ -191,8 +196,8 @@
 						"selection":
 						[
 							[
-								6652,
-								6652
+								80,
+								80
 							]
 						],
 						"settings":
@@ -202,7 +207,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 3017.0,
+						"translation.y": 2893.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -214,15 +219,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 16379,
+						"buffer_size": 15454,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								7543,
-								7543
+								6629,
+								6629
 							]
 						],
 						"settings":
@@ -233,7 +238,7 @@
 							"word_wrap": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 3289.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
@@ -291,7 +296,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 325.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 3,

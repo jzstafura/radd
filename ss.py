@@ -31,10 +31,10 @@ def set_model(gParams=None, sParams=None, ntrials=100, timebound=0.653, stb=.000
 		:visual (Bool):			plot DDM traces with RT distributions on a/b boundaries
 		:ntrials (Int):			number of trials to simulate per choice
 
+	
 	returns:
 		df (pd.DataFrame):		df containing trial-wise results of simulations
 								columns=['trial', 'rt', 'choice']
-
 	"""
 
 	ss_bool=False
@@ -77,7 +77,7 @@ def set_model(gParams=None, sParams=None, ntrials=100, timebound=0.653, stb=.000
 		gp['mu'] = gp['eta'] * np.random.randn() + gp['v']
 		tb = stb * np.random.randn() + timebound
 		sp['ss_On'] = sp['ssd'] + (sp['ssTer_lo'] + np.random.uniform() * (sp['ssTer_hi'] - sp['ssTer_lo']))
-
+		
 		if t_exp and true_onsets:
 			rt, choice, path, tsteps = sim_true_onsets(gp['mu'],gp['s2'],gp['TR'],gp['a'],gp['ZZ'], mu_ss=sp['mu_ss'], 
 				ssd=sp['ss_On'], timebound=tb, exp_scale=exp_scale, ss_trial=ss_bool)
@@ -107,16 +107,25 @@ def set_model(gParams=None, sParams=None, ntrials=100, timebound=0.653, stb=.000
 		"len_ss_tsteps":len_ss_tsteps_list, "trial_type":trial_type_list})
 
 	#df=remove_outliers(df)
-	df_abr=df.drop(['go_tsteps', 'go_paths', 'ss_tsteps', 'ss_paths'], axis=1)
-	df_abr.to_csv("sims.csv", index=False)
+	df_abr=df.drop(['go_tsteps', 'go_paths', 'ss_tsteps', 'ss_paths', 'tparams'], axis=1)
+	
+	if 'Re' in task:
+		savestr="sims_%s%s%s"%(task[2:], '_SSD', str(int(sp['ssd']*1000)))
+	elif 'Pr' in task:
+		savestr="sims_%s%s%s"%(task[2:], '_PGo', str(int(sp['pGo']*100)))
+	else:
+		savestr="sims"
+
+	df_abr.to_csv(savestr+".csv", index=False)
+	
 
 	if analyze:
-		GoRT, pS, sAcc = anl(df_abr, task=task)
-		sim_data=[GoRT, pS, sAcc]
+		GoRT, pS, sAcc, GoRT_Err = anl(df_abr)
+		sim_data=[GoRT, pS, sAcc, GoRT_Err]
 
 	if visual:
-		f=visualize_simple(df=df, pGo=sp['pGo'], timebound=timebound, t_exp=t_exp, exp_scale=exp_scale, task=task, animate=animate)
-		plt.savefig("sims%s.png"%i, format='png', dpi=600)
+		f=visualize_simple(df=df, pGo=sp['pGo'], timebound=timebound, t_exp=t_exp, exp_scale=exp_scale, task=task[:4], animate=animate)
+		plt.savefig(savestr+".png", format='png', dpi=600)
 
 	return sim_data
 
@@ -213,13 +222,14 @@ def sim_ss(mu, s2, TR, a, z, mu_ss=-6, ssd=.450, timebound=0.653, ss_trial=False
 	return t, choice, evidence_lists, timestep_lists
 
 
-def anl(df, task='ssRe'):
+def anl(df):
 	
 	GoRT=df.ix[(df['trial_type']=='go')&(df['acc']==1), 'rt'].mean()
+	GoRT_Err=df.ix[(df['trial_type']=='stop')&(df['acc']==0), 'rt'].mean() 
 	pS=len(df.ix[(df['choice']=='stop')])/len(df)
 	sAcc=df.ix[(df['trial_type']=='stop'), 'acc'].mean()
 	
-	return GoRT, pS, sAcc
+	return GoRT, pS, sAcc, GoRT_Err
 
 
 def visualize_simple(df, pGo=0.5, timebound=0.653, task='ssRe', t_exp=False, exp_scale=[10,10], animate=False):
@@ -241,7 +251,7 @@ def visualize_simple(df, pGo=0.5, timebound=0.653, task='ssRe', t_exp=False, exp
 
 	choices=list(pd.Series(df_sorted['choice']))
 	
-	if task=='ssRe':
+	if 'Re' in task:
 		pG=df.ix[(df['trial_type']=='go'), 'acc'].mean()
 		pS=df.ix[(df['trial_type']=='stop'), 'acc'].mean()
 		go_rt=df.ix[(df['trial_type']=='go')&(df['acc']==1), 'rt'].mean()
@@ -250,7 +260,7 @@ def visualize_simple(df, pGo=0.5, timebound=0.653, task='ssRe', t_exp=False, exp
 		ssrt_std=df.ix[(df['trial_type']=='stop')&(df['acc']==1), 'rt'].std()
 		GoLabel='Go Acc'; ssLabel='Stop Acc'
 	
-	elif task=='ssPro':
+	elif 'Pr' in task:
 		pG=len(df.ix[(df['choice']=='go')])/len(df)
 		pS=len(df.ix[(df['choice']=='stop')])/len(df)
 		ssrt=df.ix[(df['choice']=='stop'), 'rt'].mean()
@@ -269,7 +279,7 @@ def visualize_simple(df, pGo=0.5, timebound=0.653, task='ssRe', t_exp=False, exp
 	xlim=ax.set_xlim([xmin, xmax])
 	ylim=ax.set_ylim([0, a])
 	
-	if task=='ssPro':
+	if 'Pr' in task:
 		tb_lo=timebound-(1.96*ssrt_std)
 		tb_hi=timebound+(1.96*ssrt_std)
 		tbrange=np.array([tb_lo, tb_hi])
@@ -358,7 +368,7 @@ def visualize_simple(df, pGo=0.5, timebound=0.653, task='ssRe', t_exp=False, exp
 
 	return f
 
-def remove_outliers(df, sd=2.3):
+def remove_outliers(df, sd=1.95):
 
 	print "len(df) = %s \n\n" % (str(len(df)))
 
