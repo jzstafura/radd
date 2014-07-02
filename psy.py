@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.optimize
 import seaborn as sns
+import os
 sns.set(font="Helvetica")
 
 
@@ -108,19 +109,19 @@ def fit_scurves(ysim=None, task='ssRe', showPSE=True):
 	
 	if task=='ssRe':
 		ax.set_xlim(18, 45)
-		ax.set_xlabel('SSD (ms)', fontsize=28)
+		ax.set_xlabel('SSD (ms)', fontsize=30)
 		ax.set_xticks(np.arange(20, 45, 5))
 		ax.set_xticklabels(np.arange(200, 450, 50), fontsize=24)
 	else:
 		ax.set_xlim(-1.5, 11.5)
-		ax.set_xlabel('P(Go)', fontsize=28)
+		ax.set_xlabel('P(Go)', fontsize=30)
 		ax.set_xticks(np.arange(0, 12, 2))
 		ax.set_xticklabels(np.arange(0, 1.2, .20), fontsize=24)
 	
 	ax.set_ylim(0, 1.05)	
 	ax.set_yticks(np.arange(0, 1.2, .2))	
 	plt.setp(ax.get_yticklabels(), fontsize=24)	
-	ax.set_ylabel('P(Stop)', fontsize=28, labelpad=10) 
+	ax.set_ylabel('P(Stop)', fontsize=30, labelpad=10) 
 	ax.legend(loc=0, fontsize=24)
 	
 	yy, locs = plt.yticks()
@@ -128,7 +129,7 @@ def fit_scurves(ysim=None, task='ssRe', showPSE=True):
 	plt.yticks(yy, ll)
 
 	plt.savefig("stopsigmoid_%s%s" % (task, ".png"), format='png', dpi=600)
-	f.savefig("stopsigmoid_%s%s" % (task, ".svg"), rasterized=True, dpi=600)
+	plt.savefig("stopsigmoid_%s%s" % (task, ".svg"), rasterized=True, dpi=600)
 	
 	if showPSE:
 		ssrtFig=plotPSE(ssPSE=ssPSE, task=task)
@@ -162,7 +163,7 @@ def plot_goRTs(sim_rt=None, task='ssRe'):
 	ax = f.add_subplot(111)
 	sns.despine()
 	
-	ax.bar(x, emp_rt, yerr=emp_err, align='center', color='MediumBlue', ecolor='k', alpha=.6)
+	ax.bar(x, emp_rt, yerr=emp_err, align='center', color='MediumBlue', error_kw=dict(elinewidth=3, ecolor='black'), alpha=.6)
 	childrenLS=ax.get_children()
 	barlist=filter(lambda x: isinstance(x, matplotlib.patches.Rectangle), childrenLS)
 	barlist[1].set_color('#E60000')
@@ -184,7 +185,7 @@ def plot_goRTs(sim_rt=None, task='ssRe'):
 	#plt.yticks(yy, ll)
 
 	plt.savefig("GoRT_%s%s" % (task, ".png"), format='png', dpi=600)
-	f.savefig("GoRT_%s%s" % (task, ".svg"), rasterized=True, dpi=600)
+	plt.savefig("GoRT_%s%s" % (task, ".svg"), rasterized=True, dpi=600)
 	
 def plotPSE(ssPSE=None, task='ssRe'):
 	
@@ -209,7 +210,7 @@ def plotPSE(ssPSE=None, task='ssRe'):
 	sns.despine()
 	
 	x=np.array([1,2])
-	ax.bar(x, np.array(ssPSE[0]), align='center', color='MediumBlue', yerr=emp_err, ecolor='k', alpha=.6)
+	ax.bar(x, np.array(ssPSE[0]), align='center', color='MediumBlue', yerr=emp_err, error_kw=dict(elinewidth=3, ecolor='black'), alpha=.6)
 	childrenLS=ax.get_children()
 	barlist=filter(lambda x: isinstance(x, matplotlib.patches.Rectangle), childrenLS)
 	barlist[1].set_color('#E60000')
@@ -227,9 +228,9 @@ def plotPSE(ssPSE=None, task='ssRe'):
 		ax.set_yticks(np.arange(.335, .375, .01))
 		ax.set_yticklabels(np.arange(.335, .375, .01), fontsize=24)
 	else:
-		ax.set_ylim(.35, .42)
-		ax.set_yticks(np.arange(.35, .43, .01))
-		ax.set_yticklabels(np.arange(.35, .43, .01), fontsize=24)
+		ax.set_ylim(.34, .42)
+		ax.set_yticks(np.arange(.34, .44, .02))
+		ax.set_yticklabels(np.arange(.34, .44, .02), fontsize=24)
 	
 	ax.set_ylabel('PSE', fontsize=30)
 	
@@ -238,7 +239,7 @@ def plotPSE(ssPSE=None, task='ssRe'):
 	plt.yticks(yy, ll)
 
 	plt.savefig("pse_%s%s" % (task, ".png"), format='png', dpi=600)
-	f.savefig("pse_%s%s" % (task, ".svg"), rasterized=True, dpi=600)
+	plt.savefig("pse_%s%s" % (task, ".svg"), rasterized=True, dpi=600)
 	
 	return f
 
@@ -249,24 +250,25 @@ def scurves(ysim=None, task='ssRe', showPSE=True, ncurves=5, labels=None):
 	sns.set(style='white', font="Helvetica")
 	npoints=len(ysim[0])
 	scale_factor=10
-	x=np.array(np.linspace(0, 100, npoints), dtype='float')
+	x=np.array(np.linspace(10, 100, npoints), dtype='float')
 	xsim=np.linspace(-5, 120, 10000)
 	xxticks=x/scale_factor
 	xxticklabels=x/100
-	xxlim=(-1.5, 11.5)
+	#xxlim=(-1.5, 11.5)
+	xxlim=(0, 10.5)
 	xxlabel='P(Go)'
 	
 	if task=='ssRe':
 		xxlabel='SSD'
 		xxticks=x/scale_factor
 		print xxticks
-		xxticklabels=np.arange(200, 450, 50)
-	
+		#xxticklabels=np.arange(200, 550, 50)
+		xxticklabels=np.arange(250, 550, 50)
 	x=res(-x,lower=x[-1]/10, upper=x[0]/10)
 	
 	pse=[]
-	f = plt.figure(figsize=(6,7.5)) 
-	f.subplots_adjust(top=0.90, wspace=0.12, left=0.18, right=0.95, bottom=0.10)
+	f = plt.figure(figsize=(8,9.5)) 
+	f.subplots_adjust(top=0.95, wspace=0.12, left=0.19, right=0.98, bottom=0.15)	
 	ax = f.add_subplot(111)
 
 	sns.despine()
@@ -293,27 +295,35 @@ def scurves(ysim=None, task='ssRe', showPSE=True, ncurves=5, labels=None):
 		idx = (np.abs(pxp - .5)).argmin()
 		
 		# Plot the results
-		ax.plot(xp, pxp, '-', lw=6, color=colors[i], alpha=.5, label=labels[i])
-		ax.plot(x, y, marker='o', color=colors[i], ms=10, lw=0)
+		ax.plot(xp, pxp, '-', lw=7.5, color=colors[i], alpha=.6, label=labels[i])
+		#ax.plot(x, y, marker='o', color=colors[i], ms=10, lw=0)
 		
 		pse.append(xp[idx]/scale_factor)
 
 	#if showPSE:
 		#return pse
-
+	
+	if task=='ssRe':
+		plt.vlines(x=450, ymin=0, ymax=1, lw=20, color='k', alpha=.2)
+	
 	ax.set_xlim(xxlim)
-	ax.set_xlabel(xxlabel, fontsize=28)
+	ax.set_xlabel(xxlabel+' (ms)', fontsize=34)
 	ax.set_xticks(xxticks)
-	ax.set_xticklabels(xxticklabels, fontsize=20)
+	ax.set_xticklabels(xxticklabels, fontsize=26)
 	ax.set_ylim(0, 1.05)	
 	
-	plt.setp(ax.get_yticklabels(), fontsize=20)	
-	ax.set_ylabel('P(Stop)', fontsize=28, labelpad=11) 
-	ax.legend(loc=0, fontsize=22)
+	plt.setp(ax.get_yticklabels(), fontsize=26)	
+	ax.set_ylabel('P(Inhibit)', fontsize=34, labelpad=11) 
+	ax.legend(loc=0, fontsize=26)
 	
-	plt.savefig("scurves_%s%s" % (task, ".png"), format='png', dpi=600)
-	f.savefig("scurves_%s%s" % (task, ".svg"), rasterized=True, dpi=600)	
-	
+	if os.path.isdir("/Users/kyle"):
+		plt.savefig("/Users/kyle/ReProFactorial_SCurves%s%s" % (task, ".png"), format='png', dpi=600)
+		f.savefig("/Users/kyle/Dropbox/CoAx/ss/simdata/ReProFactorial_SCurves%s%s" % (task, ".svg"), rasterized=True, dpi=600)	
+		plt.savefig("/Users/kyle/Dropbox/CoAx/ss/simdata/ReProFactorial_SCurves%s%s" % (task, ".png"), format='png', dpi=600)	
+	elif os.path.isdir("/home/kyle"):
+		f.savefig("/home/kyle/Dropbox/CoAx/ss/simdata/ReProFactorial_SCurves%s%s" % (task, ".svg"), rasterized=True, dpi=600)	
+		plt.savefig("/home/kyle/Dropbox/CoAx/ss/simdata/ReProFactorial_SCurves%s%s" % (task, ".png"), format='png', dpi=600)
+
 	#if showPSE:
 	#	ssrtFig=plotPSE(ssPSE=ssPSE, task=task)
 	
