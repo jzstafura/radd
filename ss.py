@@ -1,5 +1,6 @@
 #!/usr/local/bin/env python
 from __future__ import division
+import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,7 +11,7 @@ from ssex import sim_ssex
 from ssex_onsets import sim_true_onsets
 sns.set(font="Helvetica")
 
-def set_model(gParams=None, sParams=None, ntrials=100, timebound=0.653, stb=.0001, task='ssRe', analyze=True, visual=True, animate=False, t_exp=False, true_onsets=False, exp_scale=[10, 10]):
+def set_model(gParams=None, sParams=None, ntrials=100, timebound=0.653, stb=.0001, task='ssRe', analyze=True, visual=True, animate=False, t_exp=False, true_onsets=False, exp_scale=[10, 10], predictBOLD=False):
 
 	"""
 	gen_model: instantiates ddm parameters and call simulation routine-->sim()
@@ -106,18 +107,39 @@ def set_model(gParams=None, sParams=None, ntrials=100, timebound=0.653, stb=.000
 		"ss_paths":ss_paths_list, "tparams":trial_params_list, "len_go_tsteps":len_go_tsteps_list, 
 		"len_ss_tsteps":len_ss_tsteps_list, "trial_type":trial_type_list})
 
-	#df=remove_outliers(df)
+	if predictBOLD:
+		
+		glist=list(pd.Series(df['go_paths']))
+		slist=list(pd.Series(df['ss_paths']))
+		gcor=list(pd.Series(df.ix[df['acc']==1, 'go_paths']))
+		gerr=list(pd.Series(df.ix[df['acc']==0, 'go_paths']))
+		gcor_choice=list(pd.Series(df.ix[(df['choice']=='go')&(df['acc']==1), 'go_paths']))
+		gerr_choice=list(pd.Series(df.ix[(df['choice']=='go')&(df['acc']==0), 'go_paths']))
+
+
+		return glist, slist, gcor, gerr, gcor_choice, gerr_choice
+		
 	df_abr=df.drop(['go_tsteps', 'go_paths', 'ss_tsteps', 'ss_paths', 'tparams'], axis=1)
 	
-	if 'Re' in task:
-		savestr="sims_%s%s%s"%(task[2:], '_SSD', str(int(sp['ssd']*1000)))
-	elif 'Pr' in task:
-		savestr="sims_%s%s%s"%(task[2:], '_PGo', str(int(sp['pGo']*100)))
-	else:
-		savestr="sims"
-
-	df_abr.to_csv(savestr+".csv", index=False)
+	#if 'Re' in task:
+		#savestr="sims_%s%s%s%s"%(task[2:], '_SSD', str(int(sp['ssd']*1000)), "pGo"+str(int(sp['pGo']*100)))
+		#task_dir="Reactive/"
+		
+	#elif 'Pr' in task:
+		#savestr="sims_%s%s%s%s"%(task[2:], '_PGo', str(int(sp['pGo']*100)), "SSD"+str(int(sp['ssd']*1000)))
+		#task_dir="Proactive/"
 	
+	#else:
+		#savestr="sims"
+
+	#if os.path.isdir("/Users/kyle"):
+		#pth="/Users/kyle/Dropbox/CoAx/ss/simdata/"+task_dir
+
+	#elif os.path.isdir("/home/kyle"):
+		#pth="/home/kyle/Dropbox/CoAx/ss/simdata/"+task_dir
+	
+	#df_abr.to_csv(pth+savestr+'.csv', index=False)
+	#df.to_csv(pth+savestr+'_full.csv', index=False)
 
 	if analyze:
 		GoRT, pS, sAcc, GoRT_Err = anl(df_abr)
@@ -231,6 +253,10 @@ def anl(df):
 	
 	return GoRT, pS, sAcc, GoRT_Err
 
+def get_average_trace(df):
+
+	go_paths=list(pd.Series(df['go_paths']))
+	df2=pd.DataFrame(go_paths)
 
 def visualize_simple(df, pGo=0.5, timebound=0.653, task='ssRe', t_exp=False, exp_scale=[10,10], animate=False):
 
@@ -388,6 +414,76 @@ def remove_outliers(df, sd=1.95):
 	return df_trimmed
 
 
+def plot_mean_traces(gomean, ssmean, ssd, Ter=3470):
+
+	sns.set_style('white')
+	a=.37; z=.5*a; ssd=ssd+990; 
+	f = plt.figure(figsize=(10,7))
+	ax = f.add_subplot(111)
+	
+	if ssd<Ter:
+		xlow=ssd-50
+	else:
+		xlow=Ter-50
+
+	sns.despine(top=True, bottom=True, left=True, right=True)
+	
+	ax.plot(np.arange(Ter,Ter+len(gomean)), gomean, color='LimeGreen', lw=4)
+	ax.plot(np.arange(ssd,ssd+len(ssmean)), ssmean, color='FireBrick', lw=4)
+	
+	hi=gomean[len(gomean)-1]
+	ax.set_xlim([xlow, Ter+len(gomean)+50])
+	ax.set_ylim([0, a])#hi+.02
+	
+	ax.hlines(y=z, xmin=xlow, xmax=Ter+len(gomean)+200, linestyle='--', lw=4, alpha=.5)
+	ax.hlines(y=a, xmin=xlow, xmax=Ter+len(gomean)+200, lw=4)
+	ax.hlines(y=0, xmin=xlow, xmax=Ter+len(gomean)+200, lw=4)
+	ax.vlines(x=xlow, ymin=0, ymax=a, lw=4)
+	
+	ax.set_yticks(np.arange(0, a, .001))
+	ax.set_yticklabels(np.arange(0, a, .01), fontsize=16)
+	ax.set_yticklabels([])
+	
+	ax.set_xticks(np.arange(xlow, Ter+len(gomean)+50, 1))
+	#ax.set_xticklabels(np.arange(xlow, Ter+len(gomean), 500), fontsize=16)
+	ax.set_xticklabels([])
+
+def concat_output(tasks=None, full=False):
+
+	if tasks is None:
+		tasks=['ReBSL_', 'RePNL_']
+		conds=['SSD200', 'SSD250', 'SSD300', 'SSD350', 'SSD400']
+	else:
+		if 'Re' in tasks[0]:
+			base_str='ssRe'
+			conds=['200ms', '250ms', '300ms', '350ms', '400ms']
+
+		else:
+			base_str='ssPro'
+			conds=['PGo100', 'PGo80', 'PGo60', 'PGo40', 'PGo20', 'PGo0']
+		
+		if '_' not in tasks[0]:
+			tasks=[t+'_' for t in tasks]
+	if full:
+		f="_full.csv"
+	else:
+		f=".csv"
+
+	path='/Users/kyle/Dropbox/git/pynb/'+base_str
+	os.chdir(path)
+	datasets=[]
+	for t in tasks:
+		for c in conds:
+		    df=pd.read_csv('sims_'+t+c+f)
+		    df['Condition']=c
+		    df['task']=t.split('_')[0]
+		    datasets.append(df)
+
+	alldf=pd.concat(datasets)
+	alldf.to_csv(base_str+'_all.csv', index=False)
+
+	return alldf
+	
 
 def conditions(cparams, ntrials=100, analyze=True, visual=True, animate=False, t_exp=False, exp_scale=[10, 10]):
 	"""
