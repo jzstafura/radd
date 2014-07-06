@@ -106,17 +106,17 @@ def sim_true_onsets(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_
 		if integrate:
 
 			if e!=z and e_ss<10000:
-				#if thalamus==z:
+
 				thalamus=e+ti
-				#else:
-				#thalamus=e-e_ss
-				#print "thalamus e-ess=%s" % str(thalamus)
+
 			elif e!=z and e_ss==10000:
+				
 				thalamus=e
-				#print "thalamus e=%s" % str(thalamus)
+				
 			else:
+				
 				thalamus=e_ss
-				#print "thalamus ess=%s" % str(thalamus)
+				
 
 			ithalamus.append(thalamus)
 	
