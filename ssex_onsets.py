@@ -7,7 +7,7 @@ from scipy import stats
 
 
 
-def sim_true_onsets(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, time_bias=0, exp_scale=[10,10]):
+def sim_true_onsets(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, time_bias=0, exp_scale=[10,10], integrate=False):
 
 	"""
 	args:
@@ -32,13 +32,14 @@ def sim_true_onsets(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_
 	tb=0				# init the exp time bias to 0
 	choice=None			# init choice as NoneType
  	tau=.0001			# time per step of the diffusion
-	dx=np.sqrt(s2*tau)  # dx is the step size up or down.
-	e=z;		     	# starting point
+	dx=np.sqrt(s2*tau)  		# dx is the step size up or down.
+	e=z;		     		# starting point
 	e_ss=10000			#arbitrary (positive) init value
 	ss_started=False
-	elist=[]; tlist=[]; elist_ss=[]; tlist_ss=[]
+	elist=[]; tlist=[]; elist_ss=[]; tlist_ss=[]; ithalamus=[];
 	num=exp_scale[0]
 	denom=exp_scale[1]
+	thalamus=z
 	
 	# loop until evidence is greater than or equal to a (upper boundary)
 	# or evidence is less than or equal to 0 (lower boundary)
@@ -81,22 +82,44 @@ def sim_true_onsets(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_
 			
 			r_ss=np.random.random_sample()
 			p_ss=0.5*(1 + mu_ss*dx/s2)
+			#ti=-dx
 			#test if stop signal has started yet.
 			#if not, then start at current position of "go/nogo" DV: e
 			if not ss_started:
 				ss_started=True
 				e_ss=e
+				ti=-dx
 				
 			else:
 				# if r < p then move up
 				if r_ss < p_ss:
 					e_ss = e_ss + dx
+					ti=dx
 				# else move down
 				else:
 					e_ss = e_ss - dx
-					
+					ti=-dx
+			
 			elist_ss.append(e_ss)
 			tlist_ss.append(t)
+		
+		if integrate:
+
+			if e!=z and e_ss<10000:
+				#if thalamus==z:
+				thalamus=e+ti
+				#else:
+				#thalamus=e-e_ss
+				#print "thalamus e-ess=%s" % str(thalamus)
+			elif e!=z and e_ss==10000:
+				thalamus=e
+				#print "thalamus e=%s" % str(thalamus)
+			else:
+				thalamus=e_ss
+				#print "thalamus ess=%s" % str(thalamus)
+
+			ithalamus.append(thalamus)
+	
 
 	evidence_lists=[elist, elist_ss]
 	timestep_lists=[tlist, tlist_ss]
@@ -106,5 +129,7 @@ def sim_true_onsets(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_
 			choice = 'go'
 		elif e<=0 or e_ss<=0:
 			choice = 'stop'
-			
-	return t, choice, evidence_lists, timestep_lists
+	if integrate:
+		return t, choice, evidence_lists, timestep_lists, ithalamus
+	else:
+		return t, choice, evidence_lists, timestep_lists

@@ -29,12 +29,12 @@ def sim_ssex(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=F
 	#else:		# or
 	#	t=TR	 # start the time at TR
 	
-	t=TR		        # start the time at TR
+	t=TR		        	# start the time at TR
 	tb=0				# init the exp time bias to 0
 	choice=None			# init choice as NoneType
  	tau=.0001			# time per step of the diffusion
-	dx=np.sqrt(s2*tau)  # dx is the step size up or down.
-	e=z;		     	# starting point
+	dx=np.sqrt(s2*tau)  		# dx is the step size up or down.
+	e=z;		     		# starting point
 	e_ss=10000			#arbitrary (positive) init value
 	ss_started=False
 	elist=[]; tlist=[]; elist_ss=[]; tlist_ss=[]
