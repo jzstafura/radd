@@ -7,11 +7,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from itertools import cycle
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from ssex import sim_ssex
-from ssex_onsets import sim_true_onsets
+from ssex import sim_exp
 sns.set(font="Helvetica")
 
-def set_model(gParams=None, sParams=None, ntrials=100, timebound=0.653, stb=.0001, task='ssRe', analyze=True, visual=True, animate=False, t_exp=False, true_onsets=False, exp_scale=[10, 10], predictBOLD=False, integrateBool=False):
+def set_model(gParams=None, sParams=None, ntrials=100, timebound=0.653, stb=.0001, task='ssRe', analyze=True, visual=True, animate=False, t_exp=False, 
+	exp_scale=[10, 10], predictBOLD=False):
 
 	"""
 	gen_model: instantiates ddm parameters and call simulation routine-->sim()
@@ -79,15 +79,17 @@ def set_model(gParams=None, sParams=None, ntrials=100, timebound=0.653, stb=.000
 		tb = stb * np.random.randn() + timebound
 		sp['ss_On'] = sp['ssd'] + (sp['ssTer_lo'] + np.random.uniform() * (sp['ssTer_hi'] - sp['ssTer_lo']))
 		
-		if t_exp and true_onsets:
-			rt, choice, path, tsteps, ithalamus = sim_true_onsets(gp['mu'],gp['s2'],gp['TR'],gp['a'],gp['ZZ'], mu_ss=sp['mu_ss'], 
-				ssd=sp['ss_On'], timebound=tb, exp_scale=exp_scale, ss_trial=ss_bool, integrate=integrateBool)
-			if integrateBool:
+		if t_exp:
+			
+			if predictBOLD:
+				
+				rt, choice, path, tsteps, ithalamus = sim_exp(gp['mu'],gp['s2'],gp['TR'],gp['a'],gp['ZZ'], mu_ss=sp['mu_ss'], 
+					ssd=sp['ss_On'], timebound=tb, exp_scale=exp_scale, ss_trial=ss_bool, integrate=True)	
 				thalamus.append(ithalamus)
-		elif t_exp:
-			rt, choice, path, tsteps = sim_ssex(gp['mu'],gp['s2'],gp['TR'],gp['a'],gp['ZZ'], mu_ss=sp['mu_ss'], 
-				ssd=sp['ss_On'], timebound=tb, exp_scale=exp_scale, ss_trial=ss_bool)
 
+			else:
+				rt, choice, path, tsteps = sim_exp(gp['mu'],gp['s2'],gp['TR'],gp['a'],gp['ZZ'], mu_ss=sp['mu_ss'], 
+					ssd=sp['ss_On'], timebound=tb, exp_scale=exp_scale, ss_trial=ss_bool, integrate=False)
 		else:
 			rt, choice, path, tsteps = sim_ss(gp['mu'],gp['s2'],gp['TR'],gp['a'],gp['ZZ'], mu_ss=sp['mu_ss'], 
 				ssd=sp['ss_On'], timebound=tb, ss_trial=ss_bool)
@@ -106,32 +108,23 @@ def set_model(gParams=None, sParams=None, ntrials=100, timebound=0.653, stb=.000
 	df=pd.DataFrame({"trial":np.arange(ntrials), "rt":rt_list, "choice":choice_list, "acc":acc_list, 
 		"go_tsteps": go_tsteps_list, "go_paths":go_paths_list, "ss_tsteps":ss_tsteps_list, 
 		"ss_paths":ss_paths_list, "tparams":trial_params_list, "len_go_tsteps":len_go_tsteps_list, 
-		"len_ss_tsteps":len_ss_tsteps_list, "trial_type":trial_type_list, "thalamus":thalamus})
+		"len_ss_tsteps":len_ss_tsteps_list, "trial_type":trial_type_list})
 
 	if predictBOLD:
 		
+		df['thalamus']=thalamus
+
 		dfgo=df.ix[df['trial_type']=='go']
 		dfss=df.ix[df['trial_type']=='stop']
-		#glist=list(pd.Series(df['go_paths']))
-		#slist=list(pd.Series(df['ss_paths']))
-		#gcor=list(pd.Series(df.ix[df['acc']==1, 'go_paths']))
-		#gerr=list(pd.Series(df.ix[df['acc']==0, 'go_paths']))
-		#gcor_choice=list(pd.Series(df.ix[(df['choice']=='go')&(df['acc']==1), 'go_paths']))
-		#gerr_choice=list(pd.Series(df.ix[(df['choice']=='go')&(df['acc']==0), 'go_paths']))
-		#glist=list(pd.Series(df.ix[(df["trial_type"]=='go')&['thalamus']))
-		#slist=list(pd.Series(df['thalamus']))
+
 		gcor=pd.Series(dfgo.ix[dfgo['acc']==1, 'thalamus'], name='CorrectGo')
 		gerr=pd.Series(dfgo.ix[dfgo['acc']==0, 'thalamus'], name='IncorrectGo')
 		scor=pd.Series(dfss.ix[dfss['acc']==1, 'thalamus'], name='CorrectStop')
 		serr=pd.Series(dfss.ix[dfss['acc']==0, 'thalamus'], name='IncorrectStop')
 		
 		dfout=pd.concat([gcor, gerr, scor, serr], axis=1)
-
-		#dfout=pd.DataFrame(data=[gcor, gerr, scor, serr], columns=['CorrectGo', 'IncorrectGo', 'CorrectStop', 'IncorrectStop'])
-		#gcor_choice=list(pd.Series(df.ix[(df['choice']=='go')&(df['acc']==1), 'thalamus']))
-		#gerr_choice=list(pd.Series(df.ix[(df['choice']=='go')&(df['acc']==0), 'thalamus']))
 		
-		return dfout #glist, slist, gcor, gerr, gcor_choice, gerr_choice
+		return dfout 
 		
 	df_abr=df.drop(['go_tsteps', 'go_paths', 'ss_tsteps', 'ss_paths', 'tparams'], axis=1)
 	

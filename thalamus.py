@@ -4,13 +4,16 @@ import pandas as pd
 import numpy as np
 import time
 from scipy import stats
-#DEPRECATED MODULE
 
-def sim_true_onsets(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, time_bias=0, exp_scale=[10,10], integrate=False):
 
-	#moved to ssex.py and renamed sim_exp
-	
+
+def integrator(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, time_bias=0, exp_scale=[10,10], integrate=False):
+
 	"""
+
+	alternative, experimental method for integrating go/nogo 
+	and ss inputs to the thalamus (default method is ssex.sim_exp(... integrate=True))
+
 	args:
 		:: mu = mean drift-rate
 		:: s2 = diffusion coeff
@@ -74,10 +77,12 @@ def sim_true_onsets(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_
 			# if r < p then move up
 			if r < p:
 				e = e + dx + timebias	
-				
+				gti= dx + timebias
+			
 			# else move down
 			else:
 				e = e - dx + timebias
+				gti= -dx + timebias
 			
 			elist.append(e)
 			tlist.append(t)
@@ -86,18 +91,20 @@ def sim_true_onsets(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_
 			
 			r_ss=np.random.random_sample()
 			p_ss=0.5*(1 + mu_ss*dx/s2)
-			
+			#ti=-dx
 			#test if stop signal has started yet.
 			#if not, then start at current position of "go/nogo" DV: e
 			if not ss_started:
 				ss_started=True
 				e_ss=e
+				ss_ti=-dx
 				
 			else:
 				# if r < p then move up
 				if r_ss < p_ss:
 					e_ss = e_ss + dx
 					ss_ti=dx
+				
 				# else move down
 				else:
 					e_ss = e_ss - dx
@@ -108,17 +115,9 @@ def sim_true_onsets(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_
 		
 		if integrate:
 
-			
-			if e!=z and e_ss!=z:
-				thalamus=e + ss_ti
+			ti = ti + gti + ss_ti
 
-			elif e!=z and e_ss==z:				
-				thalamus=e
-
-			else:
-				thalamus=e_ss
-
-			ithalamus.append(thalamus)
+			ithalamus.append(ti)
 	
 
 	evidence_lists=[elist, elist_ss]
