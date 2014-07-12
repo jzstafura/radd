@@ -4,10 +4,6 @@
 		"selected_items":
 		[
 			[
-				"dfss",
-				"dfss"
-			],
-			[
 				"predict",
 				"predict_BOLD"
 			],
@@ -35,7 +31,7 @@
 			"file": "ss.py",
 			"settings":
 			{
-				"buffer_size": 18465,
+				"buffer_size": 16504,
 				"line_ending": "Unix"
 			}
 		},
@@ -43,7 +39,15 @@
 			"file": "psy.py",
 			"settings":
 			{
-				"buffer_size": 9703,
+				"buffer_size": 13291,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "modelfx.py",
+			"settings":
+			{
+				"buffer_size": 10073,
 				"line_ending": "Unix"
 			}
 		},
@@ -51,7 +55,7 @@
 			"file": "ssex.py",
 			"settings":
 			{
-				"buffer_size": 5169,
+				"buffer_size": 5229,
 				"line_ending": "Unix"
 			}
 		},
@@ -59,23 +63,7 @@
 			"file": "thalamus.py",
 			"settings":
 			{
-				"buffer_size": 2984,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "ssex_onsets.py",
-			"settings":
-			{
-				"buffer_size": 2927,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/Users/kyle/Dropbox/git/ST3_Keymaps.py",
-			"settings":
-			{
-				"buffer_size": 1326,
+				"buffer_size": 2910,
 				"line_ending": "Unix"
 			}
 		}
@@ -129,10 +117,11 @@
 	},
 	"file_history":
 	[
-		"/Users/kyle/Dropbox/git/myhddm/vis.py",
-		"/Users/kyle/Downloads/download.txt",
+		"/home/kyle/Dropbox/git/radd/ssex_onsets.py",
+		"/Users/kyle/Dropbox/git/ST3_Keymaps.py",
 		"/Users/kyle/Dropbox/CoAx/LabMeeting/LitReviews/Journals for Lab Review",
 		"/Users/kyle/Dropbox/git/mydata/munge.py",
+		"/Users/kyle/Dropbox/git/myhddm/vis.py",
 		"/Users/kyle/Dropbox/git/radd/radd.sublime-project",
 		"/Users/kyle/Dropbox/git/pynb/.gitignore",
 		"/Users/kyle/.gitconfig",
@@ -148,7 +137,6 @@
 		"/Users/kyle/Library/Application Support/Sublime Text 3/Packages/User/Side Bar.sublime-settings",
 		"/Users/kyle/Library/Application Support/Sublime Text 3/Packages/User/Default (OSX).sublime-keymap",
 		"/Users/kyle/Dropbox/git/radd/radd_project.sublime-project",
-		"/Users/kyle/Dropbox/git/ST3_Keymaps.py",
 		"/Users/kyle/Dropbox/git/radd/psy.py",
 		"/Users/kyle/Dropbox/git/radd/README.md",
 		"/Users/kyle/Dropbox/git/radd/ss.py",
@@ -160,7 +148,7 @@
 	],
 	"find":
 	{
-		"height": 37.0
+		"height": 35.0
 	},
 	"find_in_files":
 	{
@@ -174,8 +162,9 @@
 		"case_sensitive": false,
 		"find_history":
 		[
-			"setp",
-			"go_paths",
+			"visualize_simple",
+			"#",
+			"scurves_",
 			"go",
 			"SSD",
 			"ylim",
@@ -226,15 +215,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 18465,
+						"buffer_size": 16504,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								271,
-								271
+								5982,
+								5982
 							]
 						],
 						"settings":
@@ -245,7 +234,7 @@
 							"word_wrap": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 2549.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 2,
@@ -257,15 +246,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 9703,
+						"buffer_size": 13291,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								5816,
-								5816
+								10826,
+								10826
 							]
 						],
 						"settings":
@@ -276,7 +265,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 5653.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -284,19 +273,19 @@
 				},
 				{
 					"buffer": 2,
-					"file": "ssex.py",
+					"file": "modelfx.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5169,
+						"buffer_size": 10073,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3010,
-								3010
+								2804,
+								2820
 							]
 						],
 						"settings":
@@ -305,56 +294,27 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1000.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "thalamus.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2984,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								434,
-								434
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 1379.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
-					"file": "ssex_onsets.py",
+					"buffer": 3,
+					"file": "ssex.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2927,
+						"buffer_size": 5229,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								153,
-								153
+								2327,
+								2327
 							]
 						],
 						"settings":
@@ -370,31 +330,32 @@
 					"type": "text"
 				},
 				{
-					"buffer": 5,
-					"file": "/Users/kyle/Dropbox/git/ST3_Keymaps.py",
+					"buffer": 4,
+					"file": "thalamus.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1326,
+						"buffer_size": 2910,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								222,
-								222
+								2673,
+								2673
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Python/Python.tmLanguage"
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 1173.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 4,
 					"type": "text"
 				}
 			]
@@ -402,7 +363,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 27.0
+		"height": 23.0
 	},
 	"input":
 	{
@@ -442,7 +403,7 @@
 	"project": "radd.sublime-project",
 	"replace":
 	{
-		"height": 50.0
+		"height": 42.0
 	},
 	"save_all_on_build": true,
 	"select_file":

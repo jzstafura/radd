@@ -6,8 +6,7 @@ import time
 from scipy import stats
 
 
-
-def integrator(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, time_bias=0, exp_scale=[10,10], integrate=False):
+def integrator(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, time_bias=0, exp_scale=[10,10]):
 
 	"""
 
@@ -34,12 +33,12 @@ def integrator(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial
 	else:		# or
 		t=TR	 # start the time at TR
 	
-	tb=0				# init the exp time bias to 0
-	choice=None			# init choice as NoneType
- 	tau=.0001			# time per step of the diffusion
-	dx=np.sqrt(s2*tau)  		# dx is the step size up or down.
-	e=z		     		# starting point
-	e_ss=z				#arbitrary (positive) init value
+	tb=0					# init the exp time bias to 0
+	choice=None				# init choice as NoneType
+ 	tau=.0001				# time per step of the diffusion
+	dx=np.sqrt(s2*tau)  	# dx is the step size up or down.
+	e=z		     			# init go/nogo at starting point
+	e_ss=z					# init ss at starting point  
 	ss_started=False
 	elist=[]; tlist=[]; elist_ss=[]; tlist_ss=[]; ithalamus=[];
 	num=exp_scale[0]
@@ -77,12 +76,12 @@ def integrator(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial
 			# if r < p then move up
 			if r < p:
 				e = e + dx + timebias	
-				gti= dx + timebias
+				gti = dx + timebias
 			
 			# else move down
 			else:
 				e = e - dx + timebias
-				gti= -dx + timebias
+				gti = -dx + timebias
 			
 			elist.append(e)
 			tlist.append(t)
@@ -97,18 +96,18 @@ def integrator(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial
 			if not ss_started:
 				ss_started=True
 				e_ss=e
-				ss_ti=-dx
+				ss_ti = -dx
 				
 			else:
 				# if r < p then move up
 				if r_ss < p_ss:
 					e_ss = e_ss + dx
-					ss_ti=dx
+					ss_ti = dx
 				
 				# else move down
 				else:
 					e_ss = e_ss - dx
-					ss_ti=-dx
+					ss_ti = -dx
 			
 			elist_ss.append(e_ss)
 			tlist_ss.append(t)
@@ -128,7 +127,5 @@ def integrator(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial
 			choice = 'go'
 		elif e<=0 or e_ss<=0:
 			choice = 'stop'
-	if integrate:
-		return t, choice, evidence_lists, timestep_lists, ithalamus
-	else:
-		return t, choice, evidence_lists, timestep_lists
+	
+	return t, choice, evidence_lists, timestep_lists, ithalamus

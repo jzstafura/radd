@@ -7,62 +7,36 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from itertools import cycle
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from ssex import sim_exp
+from modelfx import sim_exp, sim_ss, integrator
 sns.set(font="Helvetica")
 
-def set_model(gParams=None, sParams=None, ntrials=100, timebound=0.653, stb=.0001, task='ssRe', analyze=True, visual=True, animate=False, t_exp=False, 
-	exp_scale=[10, 10], predictBOLD=False):
+def set_model(gParams=None, sParams=None, mfx=sim_exp, ntrials=100, timebound=0.653, task='ssRe', visual=False, t_exp=False, 
+	exp_scale=[10, 10], predictBOLD=False, save=False):
 
 	"""
-	gen_model: instantiates ddm parameters and call simulation routine-->sim()
+	set_model: instantiates ddm parameters and call simulation method (mfx)
 
 	args:
-		:default (Bool):		instantiate model with default parameters (Matzke & Wagenmakers, 2009):
-							
-							a:   .125  upper boundary (lower boundary is 0)
-							z:   .063  starting point
-							nu:  .223  mean drift rate
-							Ter: .435  non-decisional time
-							eta: .133  variability in drift rate from trial to trial
-							st:  .183  variabilit in TR from trial to trial
-							sz:  .037  variability in starting point from trial to trial
-							s2:  .01   diffusion coeffient is the amount of within-trial noise
-
-		:plist (list):			list of dictionaries specifying parameters for choice 1 & choice 2
-		:visual (Bool):			plot DDM traces with RT distributions on a/b boundaries
-		:ntrials (Int):			number of trials to simulate per choice
-
+		:gParams (dict):		list of dictionaries specifying parameters for go/nogo drift-diffusion signal
+		:sParams (dict):		list of dictionaries specifying parameters for stop signal
 	
 	returns:
 		df (pd.DataFrame):		df containing trial-wise results of simulations
 								columns=['trial', 'rt', 'choice']
 	"""
-
-	ss_bool=False
-
-	if gParams is None:
-		gp={'a':0.125, 'z':0.063, 'v':0.223, 'Ter':0.435, 'eta':0.133, 'st':0.183, 'sz':0.037, 's2':.01}
+	
+	if gParams is None or sParams is None:
+		gp, sp = get_default_parameters()
 	else:
 		gp=gParams
-
-	if sParams is None:
-		sp={'mu_ss':-1.0, 'pGo':0.5, 'ssd':.450, 'ssTer':.100, 'ssTer_var':.05}
-	else:
 		sp=sParams
-
-	gp['Ter_lo'] = gp['Ter'] - gp['st']/2
-	gp['Ter_hi'] = gp['Ter'] + gp['st']/2
-	gp['z_lo'] = gp['z'] - gp['sz']/2
-	gp['z_hi'] = gp['z'] + gp['sz']/2
-
-	sp['ssTer_lo'] = sp['ssTer'] - sp['ssTer_var']/2
-	sp['ssTer_hi'] = sp['ssTer'] + sp['ssTer_var']/2
 	
-	trial_type_list=[]; rt_list=[]; choice_list=[]; acc_list=[];
-	go_paths_list=[]; go_tsteps_list=[]; ss_paths_list=[]; ss_tsteps_list=[];
-	len_go_tsteps_list=[]; len_ss_tsteps_list=[]; trial_params_list=[]; thalamus=[]
-
-	pStop=1-sp['pGo']
+	stb=.0001; pStop=1-sp['pGo']
+	
+	gp, sp = get_intervar_ranges(parameters={'gp':gp, 'sp':sp})
+	
+	trial_type_list=[]; rt_list=[]; choice_list=[]; acc_list=[]; go_paths_list=[]; go_tsteps_list=[]; ss_paths_list=[]; 
+	ss_tsteps_list=[]; len_go_tsteps_list=[]; len_ss_tsteps_list=[]; trial_params_list=[]; thalamus=[]
 	
 	for i in range(ntrials):
 		
@@ -78,21 +52,11 @@ def set_model(gParams=None, sParams=None, ntrials=100, timebound=0.653, stb=.000
 		gp['mu'] = gp['eta'] * np.random.randn() + gp['v']
 		tb = stb * np.random.randn() + timebound
 		sp['ss_On'] = sp['ssd'] + (sp['ssTer_lo'] + np.random.uniform() * (sp['ssTer_hi'] - sp['ssTer_lo']))
-		
-		if t_exp:
-			
-			if predictBOLD:
-				
-				rt, choice, path, tsteps, ithalamus = sim_exp(gp['mu'],gp['s2'],gp['TR'],gp['a'],gp['ZZ'], mu_ss=sp['mu_ss'], 
-					ssd=sp['ss_On'], timebound=tb, exp_scale=exp_scale, ss_trial=ss_bool, integrate=True)	
-				thalamus.append(ithalamus)
 
-			else:
-				rt, choice, path, tsteps = sim_exp(gp['mu'],gp['s2'],gp['TR'],gp['a'],gp['ZZ'], mu_ss=sp['mu_ss'], 
-					ssd=sp['ss_On'], timebound=tb, exp_scale=exp_scale, ss_trial=ss_bool, integrate=False)
-		else:
-			rt, choice, path, tsteps = sim_ss(gp['mu'],gp['s2'],gp['TR'],gp['a'],gp['ZZ'], mu_ss=sp['mu_ss'], 
-				ssd=sp['ss_On'], timebound=tb, ss_trial=ss_bool)
+		rt, choice, path, tsteps, ithalamus = mfx(gp['mu'],gp['s2'],gp['TR'],gp['a'],gp['ZZ'], mu_ss=sp['mu_ss'], 
+			ssd=sp['ss_On'], timebound=tb, exp_scale=exp_scale, ss_trial=ss_bool, integrate=predictBOLD)	
+		
+		thalamus.append(ithalamus)
 
 		go_paths_list.append(path[0]); go_tsteps_list.append(tsteps[0]); len_go_tsteps=len(tsteps[0])
 		ss_paths_list.append(path[1]); ss_tsteps_list.append(tsteps[1]); len_ss_tsteps=len(tsteps[1])
@@ -102,153 +66,115 @@ def set_model(gParams=None, sParams=None, ntrials=100, timebound=0.653, stb=.000
 		else:
 			acc=0
 
-		rt_list.append(rt); choice_list.append(choice); trial_params_list.append(gp); acc_list.append(acc);
+		rt_list.append(rt); choice_list.append(choice); trial_params_list.append(gp); acc_list.append(acc); 
 		len_go_tsteps_list.append(len_go_tsteps); len_ss_tsteps_list.append(len_ss_tsteps); trial_type_list.append(trial_type)
 
 	df=pd.DataFrame({"trial":np.arange(ntrials), "rt":rt_list, "choice":choice_list, "acc":acc_list, 
 		"go_tsteps": go_tsteps_list, "go_paths":go_paths_list, "ss_tsteps":ss_tsteps_list, 
 		"ss_paths":ss_paths_list, "tparams":trial_params_list, "len_go_tsteps":len_go_tsteps_list, 
 		"len_ss_tsteps":len_ss_tsteps_list, "trial_type":trial_type_list})
-
-	if predictBOLD:
-		
-		df['thalamus']=thalamus
-
-		dfgo=df.ix[df['trial_type']=='go']
-		dfss=df.ix[df['trial_type']=='stop']
-
-		gcor=pd.Series(dfgo.ix[dfgo['acc']==1, 'thalamus'], name='CorrectGo')
-		gerr=pd.Series(dfgo.ix[dfgo['acc']==0, 'thalamus'], name='IncorrectGo')
-		scor=pd.Series(dfss.ix[dfss['acc']==1, 'thalamus'], name='CorrectStop')
-		serr=pd.Series(dfss.ix[dfss['acc']==0, 'thalamus'], name='IncorrectStop')
-		
-		dfout=pd.concat([gcor, gerr, scor, serr], axis=1)
-		
-		return dfout 
-		
+	
 	df_abr=df.drop(['go_tsteps', 'go_paths', 'ss_tsteps', 'ss_paths', 'tparams'], axis=1)
 	
-	#if 'Re' in task:
-		#savestr="sims_%s%s%s%s"%(task[2:], '_SSD', str(int(sp['ssd']*1000)), "pGo"+str(int(sp['pGo']*100)))
-		#task_dir="Reactive/"
-		
-	#elif 'Pr' in task:
-		#savestr="sims_%s%s%s%s"%(task[2:], '_PGo', str(int(sp['pGo']*100)), "SSD"+str(int(sp['ssd']*1000)))
-		#task_dir="Proactive/"
-	
-	#else:
-		#savestr="sims"
+	if predictBOLD:
+		df['thalamus']=thalamus
+		df_out=pBOLD(df)
+		return df_out
 
-	#if os.path.isdir("/Users/kyle"):
-		#pth="/Users/kyle/Dropbox/CoAx/ss/simdata/"+task_dir
+	if save:
+		savefx(df_abr)
 
-	#elif os.path.isdir("/home/kyle"):
-		#pth="/home/kyle/Dropbox/CoAx/ss/simdata/"+task_dir
-	
-	#df_abr.to_csv(pth+savestr+'.csv', index=False)
-	#df.to_csv(pth+savestr+'_full.csv', index=False)
-
-	if analyze:
-		GoRT, pS, sAcc, GoRT_Err = anl(df_abr)
-		sim_data=[GoRT, pS, sAcc, GoRT_Err]
+	GoRT, pS, sAcc, GoRT_Err = anl(df_abr)
+	sim_data=[GoRT, pS, sAcc, GoRT_Err]
 
 	if visual:
-		f=visualize_simple(df=df, pGo=sp['pGo'], timebound=timebound, t_exp=t_exp, exp_scale=exp_scale, task=task[:4], animate=animate)
-		plt.savefig(savestr+".png", format='png', dpi=600)
+		f=plot_decisions(df=df, pGo=sp['pGo'], timebound=timebound, exp_scale=exp_scale, task=task[:4])
+		
+		if 'Re' in task:
+			savestr="%s_SSD%sms" % (task, str(int(sp['ssd']*1000)))
+		else:
+			savestr="%s_PGo%s" % (task, str(int(sp['pGo']*100)))
+
+		f.savefig(savestr+".png", format='png', dpi=600)
 
 	return sim_data
 
-
-def sim_ss(mu, s2, TR, a, z, mu_ss=-6, ssd=.450, timebound=0.653, ss_trial=False):
-
+def get_intervar_ranges(parameters):
 	"""
-	args:
-		:: mu = mean drift-rate
-		:: s2 = diffusion coeff
-		:: TR = non-decision time
-		:: a  = boundary height
-		:: z  = starting-point
-
-	returns:
-	 	rt (float): 	decision time
-		choice (str):	a/b
-		elist (list):	list of sequential/cumulative evidence
-		tlist (list):	list of sequential timesteps
+	:args:
+		parameters (dict):	dictionary of gp (Go/NoGo Signal Parameters) 
+					and sp (Stop Signal Parameters)
 	"""
 
-	#if TR>ssd:
-	#	t=ssd	# start the time at ssd
-	#else:		# or
-	#	t=TR	 # start the time at TR
+	gp=parameters['gp']; sp=parameters['sp']
 
-	t=TR		        # start the time at TR
- 	tau=.0001			# time per step of the diffusion
-	choice=None			# init choice as NoneType
-	dx=np.sqrt(s2*tau)  # calculate dx (step size)
-	e=z;		        # starting point
-	e_ss=10000	  		# arbitrary (positive) init value
-	ss_started=False
-	elist=[]; tlist=[]; elist_ss=[]; tlist_ss=[]
+	gp['Ter_lo'] = gp['Ter'] - gp['st']/2
+	gp['Ter_hi'] = gp['Ter'] + gp['st']/2
+	gp['z_lo'] = gp['z'] - gp['sz']/2
+	gp['z_hi'] = gp['z'] + gp['sz']/2
 
-	# loop until evidence is greater than or equal to a (upper boundary)
-	# or evidence is less than or equal to 0 (lower boundary)
-	while e<a and e>0 and e_ss>0:
+	sp['ssTer_lo'] = sp['ssTer'] - sp['ssTer_var']/2
+	sp['ssTer_hi'] = sp['ssTer'] + sp['ssTer_var']/2
 
-		if t>=timebound:
-			choice='stop'
-			break
+	return gp, sp
 
-		# increment the time
-		t = t + tau
-
-		# random float between 0 and 1
-		r=np.random.random_sample()
-
-		# This is the PROBABILITY of moving up or down.
-		# If mu is greater than 0, the diffusion tends to move up.
-		# If mu is less than 0, the diffusion tends to move down.
-		p=0.5*(1 + mu*dx/s2)
-		p_ss=0.5*(1 + mu_ss*dx/s2)
-
-		# if r < p then move up
-		if r < p:
-			e = e + dx
-		# else move down
-		else:
-			e = e - dx
-
-		if ss_trial and t>=ssd:
-
-			#test if stop signal has started yet.
-			#if not, then start at current position of "go/nogo" DV: e
-			if not ss_started:
-				ss_started=True
-				e_ss=e
-
-			else:
-				# if r < p then move up
-				if r < p_ss:
-					e_ss = e_ss + dx
-				# else move down
-				else:
-					e_ss = e_ss - dx
-
-			elist_ss.append(e_ss)
-			tlist_ss.append(t)
-
-		elist.append(e)
-		tlist.append(t)
-
-	evidence_lists=[elist, elist_ss]
-	timestep_lists=[tlist, tlist_ss]
+def get_default_parameters():
 	
-	if choice is None:
-		if e >= a:
-			choice = 'go'
-		elif e<=0 or e_ss<=0:
-			choice = 'stop'
+	"""
+	instantiate model with default parameters as found in Matzke & Wagenmakers (2009):
+							
+		a:   .125  upper boundary (lower boundary is 0)
+		z:   .063  starting point
+		nu:  .223  mean drift rate
+		Ter: .435  non-decisional time
+		eta: .133  variability in drift rate from trial to trial
+		st:  .183  variabilit in TR from trial to trial
+		sz:  .037  variability in starting point from trial to trial
+		s2:  .01   diffusion coeffient is the amount of within-trial noise
+	
+	returns:
+		gp:	go/nogo parameters
+		sp:	stop signal parameters
+	"""
+	
+	gp={'a':0.125, 'z':0.063, 'v':0.223, 'Ter':0.435, 'eta':0.133, 'st':0.183, 'sz':0.037, 's2':.01}
+	sp={'mu_ss':-1.0, 'pGo':0.5, 'ssd':.450, 'ssTer':.100, 'ssTer_var':.05}
 
-	return t, choice, evidence_lists, timestep_lists
+	return gp, sp
+
+def savefx(abr):
+
+	if 'Re' in task:
+		savestr="sims_%s%s%s%s"%(task[2:], '_SSD', str(int(sp['ssd']*1000)), "pGo"+str(int(sp['pGo']*100)))
+		task_dir="Reactive/"
+	elif 'Pr' in task:
+		savestr="sims_%s%s%s%s"%(task[2:], '_PGo', str(int(sp['pGo']*100)), "SSD"+str(int(sp['ssd']*1000)))
+		task_dir="Proactive/"
+	else:
+		savestr="sims"
+
+	if os.path.isdir("/Users/kyle"):
+		pth="/Users/kyle/Dropbox/CoAx/ss/simdata/"+task_dir
+	elif os.path.isdir("/home/kyle"):
+		pth="/home/kyle/Dropbox/CoAx/ss/simdata/"+task_dir
+	
+	df_abr.to_csv(pth+savestr+'.csv', index=False)
+	df.to_csv(pth+savestr+'_full.csv', index=False)
+
+
+def pBOLD(df):
+
+	dfgo=df.ix[df['trial_type']=='go']
+	dfss=df.ix[df['trial_type']=='stop']
+
+	gcor=pd.Series(dfgo.ix[dfgo['acc']==1, 'thalamus'], name='CorrectGo')
+	gerr=pd.Series(dfgo.ix[dfgo['acc']==0, 'thalamus'], name='IncorrectGo')
+	scor=pd.Series(dfss.ix[dfss['acc']==1, 'thalamus'], name='CorrectStop')
+	serr=pd.Series(dfss.ix[dfss['acc']==0, 'thalamus'], name='IncorrectStop')
+	
+	dfout=pd.concat([gcor, gerr, scor, serr], axis=1)
+	
+	return dfout 
 
 
 def anl(df):
@@ -260,12 +186,8 @@ def anl(df):
 	
 	return GoRT, pS, sAcc, GoRT_Err
 
-def get_average_trace(df):
 
-	go_paths=list(pd.Series(df['go_paths']))
-	df2=pd.DataFrame(go_paths)
-
-def visualize_simple(df, pGo=0.5, timebound=0.653, task='ssRe', t_exp=False, exp_scale=[10,10], animate=False):
+def plot_decisions(df, pGo=0.5, timebound=0.653, task='ssRe', t_exp=False, exp_scale=[10,10], animate=False):
 
 	plt.ion()
 	sns.set(style='white', font="Helvetica")
@@ -388,18 +310,24 @@ def visualize_simple(df, pGo=0.5, timebound=0.653, task='ssRe', t_exp=False, exp
 	for a in f.axes:
 		a.set_aspect("auto")
 
-	#if t_exp:
-	#	xx=np.arange(0, timebound, .0001)
-	#	fxx=np.exp(exp_scale[0]*xx)/(np.exp(exp_scale[1]))
-	#	expF = plt.figure(figsize=(4, 3))
-	#	expAx = expF.add_subplot(111)
-	#	expAx.plot(xx, fxx, lw=2, color='k')
-	#	expAx.set_ylim(-.0001, .01)
-	#	expAx.set_xlim(0, timebound)
-	#	expAx.set_xlabel("time (ms)", fontsize=14); expAx.set_ylabel("step-size (dx=.001)", fontsize=14, labelpad=10)
-	#	expF.suptitle("urgency signal (+dx)", fontsize=14)
+	if t_exp:
+		plot_timebias_signal(xx, exp_scale, timebound)
 
 	return f
+
+def plot_timebias_signal(xx, exp_scale, timebound):
+	
+	plt.ion()
+	xx=np.arange(0, timebound, .0001)
+	fxx=np.exp(exp_scale[0]*xx)/(np.exp(exp_scale[1]))
+	expF = plt.figure(figsize=(4, 3))
+	expAx = expF.add_subplot(111)
+	expAx.plot(xx, fxx, lw=2, color='k')
+	expAx.set_ylim(-.0001, .01)
+	expAx.set_xlim(0, timebound)
+	expAx.set_xlabel("time (ms)", fontsize=14); expAx.set_ylabel("step-size (dx=.001)", fontsize=14, labelpad=10)
+	expF.suptitle("urgency signal (+dx)", fontsize=14)
+
 
 def remove_outliers(df, sd=1.95):
 

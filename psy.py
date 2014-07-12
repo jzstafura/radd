@@ -6,7 +6,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.optimize
 import seaborn as sns
+import pandas as pd
 import os
+import ss
 sns.set(font="Helvetica")
 
 
@@ -191,7 +193,6 @@ def plotPSE(ssPSE=None, task='ssRe'):
 	
 	plt.ion()
 	sns.set(style='white', font="Helvetica")
-	#sns.set_style('white')
 	
 
 	if task=='ssRe':
@@ -244,26 +245,35 @@ def plotPSE(ssPSE=None, task='ssRe'):
 	return f
 
 
-def scurves(ysim=None, task='ssRe', showPSE=True, ncurves=5, labels=None):
+def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, ncurves=5, labels=None, predict_brain=False):
 	
 	plt.ion()
+	if predict_brain:
+		ysim=[ysim, ysim]
+		#xsim=np.linspace(15, 50, 10000)
+		#scale_factor=100
 	sns.set(style='white', font="Helvetica")
 	npoints=len(ysim[0])
-	scale_factor=10
-	x=np.array(np.linspace(10, 100, npoints), dtype='float')
 	xsim=np.linspace(-5, 120, 10000)
+	scale_factor=10
+	
+	#if predict_brain:
+	#	ysim=[ysim, ysim]
+		#xsim=np.linspace(15, 50, 10000)
+		#scale_factor=100
+	
+	x=np.array(np.linspace(10, 100, npoints), dtype='float')
+	#xsim=np.linspace(-5, 120, 10000)
 	xxticks=x/scale_factor
 	xxticklabels=x/100
-	#xxlim=(-1.5, 11.5)
 	xxlim=(0, 10.5)
 	xxlabel='P(Go)'
 	
 	if task=='ssRe':
 		xxlabel='SSD'
 		xxticks=x/scale_factor
-		print xxticks
-		#xxticklabels=np.arange(200, 550, 50)
 		xxticklabels=np.arange(250, 550, 50)
+	
 	x=res(-x,lower=x[-1]/10, upper=x[0]/10)
 	
 	pse=[]
@@ -292,18 +302,22 @@ def scurves(ysim=None, task='ssRe', showPSE=True, ncurves=5, labels=None):
 		
 		xp = xsim 
 		pxp=sigmoid(p,xp)
-		idx = (np.abs(pxp - .5)).argmin()
 		
+		idx = (np.abs(pxp - pstop)).argmin()
+		
+		if predict_brain and i==0:
+			
+			x_at_pstop=xp[idx]/scale_factor
+			
+			return x_at_pstop
+
 		# Plot the results
 		ax.plot(xp, pxp, '-', lw=7.5, color=colors[i], alpha=.6, label=labels[i])
 		#ax.plot(x, y, marker='o', color=colors[i], ms=10, lw=0)
 		
 		pse.append(xp[idx]/scale_factor)
 
-	#if showPSE:
-		#return pse
-	
-	if task=='ssRe':
+	if 'Re' in task:
 		plt.vlines(x=450, ymin=0, ymax=1, lw=20, color='k', alpha=.2)
 	
 	ax.set_xlim(xxlim)
@@ -324,12 +338,154 @@ def scurves(ysim=None, task='ssRe', showPSE=True, ncurves=5, labels=None):
 		f.savefig("/home/kyle/Dropbox/CoAx/ss/simdata/ReProFactorial_SCurves%s%s" % (task, ".svg"), rasterized=True, dpi=600)	
 		plt.savefig("/home/kyle/Dropbox/CoAx/ss/simdata/ReProFactorial_SCurves%s%s" % (task, ".png"), format='png', dpi=600)
 
-	#if showPSE:
-	#	ssrtFig=plotPSE(ssPSE=ssPSE, task=task)
-	
 	pse=pse
 	
 	return pse
+
+
+def predict_neural_integrator(m={}, arr=np.arange(0, 1, .1), task='ssReBSL', plot=True):
+
+	cd=dict()
+	
+	pglist=[0, .2, .4, .6, .8, 1]
+	vlist=[0.073, 0.26, 0.4385, 0.601, 0.93, 1.09]
+	#ssdlist=[.2, .25, .3, .35, .4]
+	ssdlist=[.4, .35, .3, .25, .20]
+	simlist=[]
+
+	if 'Re' in task:
+
+		for ssd in ssdlist:
+			
+			#m['sp']['ssd']=ssd
+			sp={'mu_ss':m['sp']['mu_ss'], 'pGo':.5, 'ssd':ssd, 'ssTer':m['sp']['ssTer'], 'ssTer_var':m['sp']['ssTer_var']}
+			gp={'a':m['gp']['a'], 'z':m['gp']['z'], 'v':m['gp']['v'], 'Ter':m['gp']['Ter'], 'st':m['gp']['st'], 'sz':m['gp']['sz'], 
+				'eta':m['gp']['eta'], 's2':m['gp']['s2']}
+			#sim_data=ss.set_model(gParams=m['gp'], sParams=m['sp'], ntrials=m['ntrials'], 
+			#	timebound=m['timebound'], predictBOLD=False, task=task)
+
+			sim_data=ss.set_model(gParams=gp, sParams=sp, ntrials=m['ntrials'], 
+				timebound=m['timebound'], predictBOLD=False, task=task)
+			
+			simlist.append(sim_data[2])
+
+		print simlist
+	
+	elif 'Pro' in task:
+		
+		for i, pg in enumerate(pglist):
+	
+			m['gp']['v']=vlist[i]
+			m['sp']['v']=pg
+	
+			sim_data=ss.set_model(gParams=m['gp'], sParams=m['sp'], ntrials=m['ntrials'], 
+				timebound=m['timebound'], predictBOLD=False, task=task)
+			simlist.append(simdata[1])
+	
+	#if task=='ssReBSL':
+	#	xp, pxp=scurves(ysim=np.array(simlist, dtype='float')[::-1], task=task, predict_brain=True)
+		#return pxp, xp
+	#elif task=='ssProBSL':
+	#	xp, pxp=scurves(ysim=np.array(simlist, dtype='float')[::-1], task=task, predict_brain=True)
+	
+	#idxlist=[]
+	
+	for i in arr:
+		
+	
+		x_at_p=scurves(ysim=np.array(simlist, dtype='float')[::-1], task=task, pstop=i, predict_brain=True)
+		print x_at_p
+		#return x_at_p
+		#idx = (pxp-np.abs(arr[i])).argmin()
+		#print np.abs(i)
+		#idx = (pxp - np.abs(i)).argmin()
+		#print xp[idx]
+		#point=xp[idx]/10
+		#point=xp[idx]/100
+		#print point
+
+		#idxlist.append(point)
+		#if i==arr[-1]: 
+
+		#	return idxlist
+		
+	#	if 'R' in task:
+	#		m['sp']['pGo']=.5
+	#		m['sp']['ssd'] =  x_at_p #point #idx
+	#	elif 'P' in task:
+	#		m['sp']['pGo'] = x_at_p #idx
+	#		m['sp']['ssd']=.450
+	#
+	#	df_out = ss.set_model(gParams=m['gp'], sParams=m['sp'], ntrials=m['ntrials'],
+ 	#		timebound=m['timebound'], predictBOLD=True, task=task)
+	#
+	#	#print df_out.columns
+	#
+	#	print df_out.keys()
+	#
+	#	cd[str(i)]=integrate_all_signals(df=df_out)
+	#
+	#if plot:
+	#	#x, y=plot_integrator_magnitude(cd=cd)
+	#	plot_integrator_magnitude(cd=cd)
+	#	return x, y
+
+
+def integrate_all_signals(df):
+
+	td=dict()
+	
+	for ttype in df.keys():
+		
+		df[ttype].dropna(inplace=True)
+		df[ttype].index=np.arange(len(df[ttype]))
+
+        	integrals=[]
+	        for trace in df[ttype][:]:
+			csum_max=pd.Series(trace).cumsum().max()
+			integrals.append(csum_max)
+		
+		td[ttype]=np.mean(integrals)
+
+	return td
+
+def plot_integrator_magnitude(cd):
+
+	plt.ion()
+	sns.set(style='white', context='talk', font="Helvetica")
+
+	for i, k in enumerate(cd.keys()):
+		
+		f = plt.figure() 
+		f.suptitle(k, fontsize=16)
+		ax = f.add_subplot(111)#len(cd.keys()), 1, i)
+		sns.despine()
+
+		xlist=[]; ylist=[]
+		for tdk in cd[k].keys():
+			xlist.append(tdk)
+				#xlist.append(tdk)
+		for tdv in cd[k].values():
+			ylist.append(tdv)
+		
+		#return xlist, ylist
+
+		#xlist=[tdkeys for td in cd[k].keys() for tdkeys in cd[td].keys()]
+
+		#ylist=[tdvals for td in cd[k][td].values]
+		
+		sns.barplot(x=np.array(xlist), y=np.array(ylist), ci=None, palette="BuGn_d", ax=ax)
+
+	#return cd
+
+
+
+
+
+
+
+
+
 
 
 
