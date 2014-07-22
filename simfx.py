@@ -5,11 +5,14 @@ import numpy as np
 import time
 from scipy import stats
 
-
-
-def sim_exp(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, time_bias=0, exp_scale=[10,10], integrate=False):
+def sim_radd(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, time_bias=0, exp_scale=[10,10], integrate=False):
 
 	"""
+
+	Standard radd simulation model, 
+	including exponential temporal bias 
+	and optional BOLD predictions
+
 	args:
 		:: mu = mean drift-rate
 		:: s2 = diffusion coeff
@@ -397,6 +400,9 @@ def integrator(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial
 def sim_ss(mu, s2, TR, a, z, mu_ss=-6, ssd=.450, timebound=0.653, ss_trial=False, **kwargs):
 
 	"""
+	
+	Simple radd simulation model (no exponential time bias)
+	
 	args:
 		:: mu = mean drift-rate
 		:: s2 = diffusion coeff

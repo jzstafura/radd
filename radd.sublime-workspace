@@ -4,6 +4,10 @@
 		"selected_items":
 		[
 			[
+				"elist",
+				"elist_ss"
+			],
+			[
 				"predict",
 				"predict_BOLD"
 			],
@@ -31,7 +35,15 @@
 			"file": "ss.py",
 			"settings":
 			{
-				"buffer_size": 16606,
+				"buffer_size": 16628,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/Users/kyle/Dropbox/git/radd/simfx.py",
+			"settings":
+			{
+				"buffer_size": 13218,
 				"line_ending": "Unix"
 			}
 		},
@@ -40,30 +52,6 @@
 			"settings":
 			{
 				"buffer_size": 13291,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "modelfx.py",
-			"settings":
-			{
-				"buffer_size": 10074,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "ssex.py",
-			"settings":
-			{
-				"buffer_size": 5229,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "thalamus.py",
-			"settings":
-			{
-				"buffer_size": 2910,
 				"line_ending": "Unix"
 			}
 		}
@@ -117,6 +105,12 @@
 	},
 	"file_history":
 	[
+		"/Users/kyle/Dropbox/Git/radd/thalamus.py",
+		"/Users/kyle/Dropbox/Git/radd/ssex.py",
+		"/Users/kyle/Dropbox/Git/radd/simfx.py",
+		"/Users/kyle/Dropbox/git/radd/modelsfx.py",
+		"/Users/kyle/Library/Application Support/Sublime Text 3/Packages/User/Default (OSX).sublime-keymap",
+		"/Users/kyle/Library/Application Support/Sublime Text 3/Packages/Default/Default (OSX).sublime-keymap",
 		"/Users/kyle/Dropbox/Git/myhddm/vis.py",
 		"/Users/kyle/.gitignore",
 		"/home/kyle/Dropbox/git/radd/ssex_onsets.py",
@@ -136,7 +130,6 @@
 		"/Users/kyle/Dropbox/git/radd/.git/config",
 		"/Users/kyle/.matplotlib/matplotlibrc",
 		"/Users/kyle/Library/Application Support/Sublime Text 3/Packages/User/Side Bar.sublime-settings",
-		"/Users/kyle/Library/Application Support/Sublime Text 3/Packages/User/Default (OSX).sublime-keymap",
 		"/Users/kyle/Dropbox/git/radd/radd_project.sublime-project",
 		"/Users/kyle/Dropbox/git/radd/psy.py",
 		"/Users/kyle/Dropbox/git/radd/README.md",
@@ -149,7 +142,7 @@
 	],
 	"find":
 	{
-		"height": 35.0
+		"height": 37.0
 	},
 	"find_in_files":
 	{
@@ -163,6 +156,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"sim_exp",
 			"visualize_simple",
 			"#",
 			"scurves_",
@@ -216,15 +210,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 16606,
+						"buffer_size": 16628,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								5853,
-								5853
+								317,
+								317
 							]
 						],
 						"settings":
@@ -235,7 +229,7 @@
 							"word_wrap": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 2578.0,
+						"translation.y": 8.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -243,6 +237,35 @@
 				},
 				{
 					"buffer": 1,
+					"file": "/Users/kyle/Dropbox/git/radd/simfx.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 13218,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
 					"file": "psy.py",
 					"semi_transient": false,
 					"settings":
@@ -255,7 +278,7 @@
 						[
 							[
 								12682,
-								12738
+								12682
 							]
 						],
 						"settings":
@@ -266,97 +289,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 6593.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "modelfx.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 10074,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								138,
-								138
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 6518.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "ssex.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5229,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2327,
-								2327
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "thalamus.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2910,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2673,
-								2673
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 1173.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
 					"type": "text"
 				}
 			]

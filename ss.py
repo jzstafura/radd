@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from itertools import cycle
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from modelfx import sim_exp, sim_ss, sustained_integrator, integrator
+from simfx import sim_radd, sim_ss, sustained_integrator, integrator
+
 sns.set(font="Helvetica")
 
 def set_model(gParams=None, sParams=None, mfx=sim_exp, ntrials=100, timebound=0.653, task='ssRe', visual=False, t_exp=False, 
@@ -79,7 +80,7 @@ def set_model(gParams=None, sParams=None, mfx=sim_exp, ntrials=100, timebound=0.
 	if predictBOLD:
 		
 		df_bold=df_abr.copy()
-		
+
 		df_bold['thalamus']=thalamus
 		
 		#df_out=pBOLD(df_bold, task='Re')
