@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from itertools import cycle
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from modelfx import sim_exp, sim_ss, integrator
+from modelfx import sim_exp, sim_ss, sustained_integrator, integrator
 sns.set(font="Helvetica")
 
 def set_model(gParams=None, sParams=None, mfx=sim_exp, ntrials=100, timebound=0.653, task='ssRe', visual=False, t_exp=False, 
@@ -77,9 +77,14 @@ def set_model(gParams=None, sParams=None, mfx=sim_exp, ntrials=100, timebound=0.
 	df_abr=df.drop(['go_tsteps', 'go_paths', 'ss_tsteps', 'ss_paths', 'tparams'], axis=1)
 	
 	if predictBOLD:
-		df['thalamus']=thalamus
-		df_out=pBOLD(df)
-		return df_out
+		
+		df_bold=df_abr.copy()
+		
+		df_bold['thalamus']=thalamus
+		
+		#df_out=pBOLD(df_bold, task='Re')
+		
+		return df_bold
 
 	if save:
 		savefx(df_abr)
@@ -167,13 +172,19 @@ def pBOLD(df):
 	dfgo=df.ix[df['trial_type']=='go']
 	dfss=df.ix[df['trial_type']=='stop']
 
-	gcor=pd.Series(dfgo.ix[dfgo['acc']==1, 'thalamus'], name='CorrectGo')
-	gerr=pd.Series(dfgo.ix[dfgo['acc']==0, 'thalamus'], name='IncorrectGo')
-	scor=pd.Series(dfss.ix[dfss['acc']==1, 'thalamus'], name='CorrectStop')
-	serr=pd.Series(dfss.ix[dfss['acc']==0, 'thalamus'], name='IncorrectStop')
+	if 'Re' in task:
+
+		gcor=pd.Series(dfgo.ix[dfgo['acc']==1, 'thalamus'], name='CorrectGo')
+		gerr=pd.Series(dfgo.ix[dfgo['acc']==0, 'thalamus'], name='IncorrectGo')
+		scor=pd.Series(dfss.ix[dfss['acc']==1, 'thalamus'], name='CorrectStop')
+		serr=pd.Series(dfss.ix[dfss['acc']==0, 'thalamus'], name='IncorrectStop')
+		
+		dfout=pd.concat([gcor, gerr, scor, serr], axis=1)
 	
-	dfout=pd.concat([gcor, gerr, scor, serr], axis=1)
-	
+	else:
+		dfout=df
+
+
 	return dfout 
 
 

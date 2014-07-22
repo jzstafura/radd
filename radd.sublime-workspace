@@ -31,7 +31,7 @@
 			"file": "ss.py",
 			"settings":
 			{
-				"buffer_size": 16504,
+				"buffer_size": 16606,
 				"line_ending": "Unix"
 			}
 		},
@@ -47,7 +47,7 @@
 			"file": "modelfx.py",
 			"settings":
 			{
-				"buffer_size": 10073,
+				"buffer_size": 10074,
 				"line_ending": "Unix"
 			}
 		},
@@ -117,6 +117,8 @@
 	},
 	"file_history":
 	[
+		"/Users/kyle/Dropbox/Git/myhddm/vis.py",
+		"/Users/kyle/.gitignore",
 		"/home/kyle/Dropbox/git/radd/ssex_onsets.py",
 		"/Users/kyle/Dropbox/git/ST3_Keymaps.py",
 		"/Users/kyle/Dropbox/CoAx/LabMeeting/LitReviews/Journals for Lab Review",
@@ -129,7 +131,6 @@
 		"/Users/kyle/.ipython/profile_default/ipython_notebook_config.py",
 		"/Users/kyle/Library/Application Support/Sublime Text 3/Packages/User/Preferences.sublime-settings",
 		"/Users/kyle/Dropbox/git/myhddm/sims.py",
-		"/Users/kyle/.gitignore",
 		"/Users/kyle/Dropbox/git/raddCoAx/.DS_Store",
 		"/Users/kyle/Dropbox/git/raddCoAx/.git/config",
 		"/Users/kyle/Dropbox/git/radd/.git/config",
@@ -206,7 +207,7 @@
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 0,
 			"sheets":
 			[
 				{
@@ -215,15 +216,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 16504,
+						"buffer_size": 16606,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								5982,
-								5982
+								5853,
+								5853
 							]
 						],
 						"settings":
@@ -234,10 +235,10 @@
 							"word_wrap": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 2549.0,
+						"translation.y": 2578.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
@@ -253,8 +254,8 @@
 						"selection":
 						[
 							[
-								10826,
-								10826
+								12682,
+								12738
 							]
 						],
 						"settings":
@@ -265,10 +266,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 5653.0,
+						"translation.y": 6593.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
@@ -277,15 +278,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 10073,
+						"buffer_size": 10074,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2804,
-								2820
+								138,
+								138
 							]
 						],
 						"settings":
@@ -294,10 +295,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1379.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
