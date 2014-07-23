@@ -1,4 +1,4 @@
-#RADD: Race Against Drift-Diffusion model of motor inhibition#
+#RADD: Race Against Drift-Diffusion model of sensorimotor inhibition and decision-making#
 
 
 ###Summary
