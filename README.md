@@ -19,7 +19,8 @@ level of "Go" evidence in order to suppress the evolving motor response.
 
 
 ### Features ###
-----------------
+________________
+--
 ================
 
 * Includes models of proactive and reactive stopping.
