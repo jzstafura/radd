@@ -2,7 +2,7 @@
 
 
 ### Summary ##
-**=======**
+===============
 RADD is a python module for modeling the underlying dynamics of motor inhibition
 as a combination of two widely utilized conceptual frameworks: race models of response inhibtion
 and drift-diffusion models of decision-making.
@@ -17,8 +17,8 @@ In the event that a stop signal is encountered, the hyperdirect pathway must ove
 level of "Go" evidence in order to suppress the evolving motor response.
 
 
-### Features
-**=======**
+### Features ###
+================
 * Includes models of proactive and reactive stopping.
 
 * Flexible control over numerous parameters including all standard and inter-trial
@@ -36,7 +36,7 @@ level of "Go" evidence in order to suppress the evolving motor response.
 
 
 ### Future Development ###
-**=======**
+==========================
 * Currently RADD is in *very early* stages of development and requires the user to define values
   for model parameters (undefined parameters assume default values (which can be found in 
   [Matzke & Wagenmakers, 2009](http://www.ejwagenmakers.com/2009/MatzkeWagenmakers2009.pdf)).
@@ -53,7 +53,7 @@ level of "Go" evidence in order to suppress the evolving motor response.
 
 
 ### Examples ###
-**=======**
+================
 Below is an example of how to simulate several conditions in a typical proactive stop-signal task.
 Numerous other "pre-release" (and poorly documented) examples are availabe in the form of 
 iPython Notebooks at [RADD IPyNb's](http://nbviewer.ipython.org/github/dunovank/pynb/tree/master/).
