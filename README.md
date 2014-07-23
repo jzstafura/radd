@@ -18,7 +18,7 @@ level of "Go" evidence in order to suppress the evolving motor response.
 
 
 ## Features
-===
+***_____________________________________________________________________________________________***
 
 * Includes models of proactive and reactive stopping.
 
@@ -38,7 +38,7 @@ level of "Go" evidence in order to suppress the evolving motor response.
 
 
 ## Future Development
-=====================
+--
 
 * Currently RADD is in *very early* stages of development and requires the user to define values
   for model parameters (undefined parameters assume default values (which can be found in 
@@ -57,7 +57,7 @@ level of "Go" evidence in order to suppress the evolving motor response.
 
 
 ## Examples
-==
+***_____________________________________________________________________________________________***
 
 Below is an example of how to simulate several conditions in a typical proactive stop-signal task.
 Numerous other "pre-release" (and poorly documented) examples are availabe in the form of 
