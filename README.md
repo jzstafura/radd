@@ -39,7 +39,7 @@ level of "Go" evidence in order to suppress the evolving motor response.
 ## Future Development
 
 * Currently RADD is in *very early* stages of development and requires the user to define values
-  for model parameters (undefined parameters assume default values (which can be found in 
+  for model parameters (undefined parameters assume default values which can be found in 
   [Matzke & Wagenmakers, 2009](http://www.ejwagenmakers.com/2009/MatzkeWagenmakers2009.pdf)).
   However, future releases will include parameter fitting routines.
 
