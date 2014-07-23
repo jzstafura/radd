@@ -2,7 +2,7 @@
 
 
 ### Summary
-======
+=
 
 RADD is a python module for modeling the underlying dynamics of motor inhibition
 as a combination of two widely utilized conceptual frameworks: race models of response inhibtion
@@ -18,8 +18,8 @@ In the event that a stop signal is encountered, the hyperdirect pathway must ove
 level of "Go" evidence in order to suppress the evolving motor response.
 
 
-####Features
-======
+### Features
+==
 
 * Includes models of proactive and reactive stopping.
 
@@ -37,8 +37,8 @@ level of "Go" evidence in order to suppress the evolving motor response.
   single-unit electrophysiological data.
 
 
-####Future Development
-======
+### Future Development
+--
 * Currently RADD is in *very early* stages of development and requires the user to define values
   for model parameters (undefined parameters assume default values (which can be found in 
   [Matzke & Wagenmakers, 2009](http://www.ejwagenmakers.com/2009/MatzkeWagenmakers2009.pdf)).
@@ -54,29 +54,27 @@ level of "Go" evidence in order to suppress the evolving motor response.
   methods, +
 
 
-####Examples
-======
+### Examples
+-
 
 Below is an example of how to simulate several conditions in a typical proactive stop-signal task.
 Numerous other "pre-release" (and poorly documented) examples are availabe in the form of 
 iPython Notebooks at [RADD IPyNb's](http://nbviewer.ipython.org/github/dunovank/pynb/tree/master/).
 
+
+##### import libraries & define global parameters
 ```python
 from radd import ss, psy, simfx
 
-#define global parameters
 a=.37; z=.5*a; Ter=.347; eta=.14; st=.0001; sz=.0001; s2=.01; xpo=[12, 12.29]; pSSD=.450;
 mu_ss=-2.17; ssTer=.099; ssRe_TB=.653; ssPro_TB=.6; nt=1000; sTB=.00001; ssTer_var=.0001
 ```
 
+##### simulate behavior under different probabilities of "Go" as a change in the drift-rate
 ```python
-#list for collecting output (pandas dataframes)
 out=[]
 
-#list of go probabilities in proactive stopping task
 pGo=[.2, .4, .6, .8]
-
-#list of drift-rates for each probability of go condition
 vlist=[0.20, 0.45, 0.60, 0.95]
 
 for i, v in enumerate(vlist):
@@ -84,8 +82,8 @@ for i, v in enumerate(vlist):
     gp={'a':a, 'z':z, 'v':v, 'Ter':Ter, 'eta':eta, 'st':st, 'sz':sz, 's2':s2}
     sp={'mu_ss':mu_ss, 'pGo':pGo[i], 'ssd':pSSD, 'ssTer':ssTer, 'ssTer_var':ssTer_var}
     
-    sim_data=ss.set_model(gParams=gp, sParams=sp, ntrials=nt, timebound=ssPro_TB, t_exp=True, 
-                       exp_scale=xpo, visual=False, task='ssProBSL', predictBOLD=True)
+    sim_data=ss.set_model(gParams=gp, sParams=sp, ntrials=nt, timebound=ssPro_TB, 
+    	t_exp=True, exp_scale=xpo, visual=False, task='ssProBSL')
     
     out.append(sim_data)
 ```
