@@ -2,7 +2,7 @@
 
 
 ###Summary
-===========
+----------
 RADD is a python module for modeling the underlying dynamics of motor inhibition
 as a combination of two widely utilized conceptual frameworks: race models of response inhibtion
 and drift-diffusion models of decision-making.
@@ -16,7 +16,7 @@ level of "Go" evidence in order to suppress the evolving motor response.
 
 
 ###Features
-===========
+-----------
 
 * Includes models of proactive and reactive stopping.
 
@@ -24,7 +24,7 @@ level of "Go" evidence in order to suppress the evolving motor response.
   variability parameters of the full drift-diffusion model and additional stop-signal
   parameters.
 
-* Optional temporally dependent dynamic bias signal (see [Hanks et al., (2011)](http://www.jneurosci.org/content/31/17/6339.full.pdf))
+* Optional temporally dependent dynamic bias signal (see [Hanks et al., 2011](http://www.jneurosci.org/content/31/17/6339.full.pdf))
 
 * Quality visualizations for assessing response time distributions of Go and Stop processes,
   comparing empirical and simulated data, etc.
@@ -35,10 +35,10 @@ level of "Go" evidence in order to suppress the evolving motor response.
 
 
 ###Future Development
-=====================
+---------------------
 * Currently RADD is in very early stages of development and requires the user to define values
-  for model parameters (undefined parameters assume default values which can be found in 
-  [Matzke & Wagenmakers (2009)](http://www.ejwagenmakers.com/2009/MatzkeWagenmakers2009.pdf)).
+  for model parameters (undefined parameters assume default values (which can be found in 
+  [Matzke & Wagenmakers, 2009](http://www.ejwagenmakers.com/2009/MatzkeWagenmakers2009.pdf)).
   However, future releases will include parameter fitting routines.
 
 * We are currently in the process of implementing RADD as a neural network model of the BG.
