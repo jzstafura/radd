@@ -1,11 +1,14 @@
-##RADD: Race Against Drift-Diffusion model of sensorimotor inhibition and decision-making#
+## RADD: Race Against Drift-Diffusion model of sensorimotor inhibition and decision-making
 
 
-###Summary
-----------
+### Summary
+======
+
 RADD is a python module for modeling the underlying dynamics of motor inhibition
 as a combination of two widely utilized conceptual frameworks: race models of response inhibtion
 and drift-diffusion models of decision-making.
+
+![Image of RADD](https://www.evernote.com/shard/s430/sh/8ce6464a-a304-411f-b26c-32162ceba3bc/56d47bbfbaf44a531a03c03fd4a21438/res/cc0f6f25-969a-44e7-a490-eec2386ee6ac/a.ssRe%20Final%20Fits%20and%20Figures.ipynb.jpg?resizeSmall&width=832&alpha=)
 
 RADD seeks to explain both proactive and reactive forms of response inhibition within a unified
 framework in which the competition between direct ("Go") and indirect ("No Go") pathways is modeled
@@ -14,13 +17,9 @@ process acts as a dynamically moving baseline from which a hyperdirect "Stop" pr
 In the event that a stop signal is encountered, the hyperdirect pathway must override the current 
 level of "Go" evidence in order to suppress the evolving motor response.
 
-![Image of RADD](https://www.evernote.com/shard/s430/sh/8ce6464a-a304-411f-b26c-32162ceba3bc/56d47bbfbaf44a531a03c03fd4a21438/res/cc0f6f25-969a-44e7-a490-eec2386ee6ac/a.ssRe%20Final%20Fits%20and%20Figures.ipynb.jpg?resizeSmall&width=832&alpha=)
-
-![Image of Yaktocat](https://octodex.github.com/images/yaktocat.png)
-
 
 ####Features
------------
+======
 
 * Includes models of proactive and reactive stopping.
 
@@ -39,7 +38,7 @@ level of "Go" evidence in order to suppress the evolving motor response.
 
 
 ####Future Development
----------------------
+======
 * Currently RADD is in *very early* stages of development and requires the user to define values
   for model parameters (undefined parameters assume default values (which can be found in 
   [Matzke & Wagenmakers, 2009](http://www.ejwagenmakers.com/2009/MatzkeWagenmakers2009.pdf)).
@@ -56,6 +55,7 @@ level of "Go" evidence in order to suppress the evolving motor response.
 
 
 ####Examples
+======
 
 Below is an example of how to simulate several conditions in a typical proactive stop-signal task.
 Numerous other "pre-release" (and poorly documented) examples are availabe in the form of 
