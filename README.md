@@ -14,7 +14,9 @@ process acts as a dynamically moving baseline from which a hyperdirect "Stop" pr
 In the event that a stop signal is encountered, the hyperdirect pathway must override the current 
 level of "Go" evidence in order to suppress the evolving motor response.
 
-![Image of RADD Model](https://www.evernote.com/shard/s430/sh/32a45049-3261-4351-8bb5-6ca01c89d696/175f70d699366ee88e50e0e0fd53aea9)
+![Image of RADD](https://www.evernote.com/shard/s430/sh/8ce6464a-a304-411f-b26c-32162ceba3bc/56d47bbfbaf44a531a03c03fd4a21438/res/cc0f6f25-969a-44e7-a490-eec2386ee6ac/a.ssRe%20Final%20Fits%20and%20Figures.ipynb.jpg?resizeSmall&width=832&alpha=)
+
+![Image of Yaktocat](https://octodex.github.com/images/yaktocat.png)
 
 
 ####Features
