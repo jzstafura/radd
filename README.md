@@ -1,7 +1,8 @@
 ## RADD: Race Against Drift-Diffusion model of sensorimotor inhibition and decision-making
 
 ### Summary
------------
+___
+---
 
 RADD is a python module for modeling the underlying dynamics of motor inhibition
 as a combination of two widely utilized conceptual frameworks: race models of response inhibtion
@@ -41,6 +42,7 @@ ________________
 
 
 ### Future Development
+__
 ----------------------
 ======================
 
@@ -61,6 +63,7 @@ ________________
 
 
 ### Examples
+--
 ----------------
 
 Below is an example of how to simulate several conditions in a typical proactive stop-signal task.
