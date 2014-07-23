@@ -1,5 +1,4 @@
-##Description of RaDD: Race Against Drift-Diffusion model of response inhibition#
-
+##RADD: Race Against Drift-Diffusion model of motor inhibition#
 
 ###Code Block with Ruby Syntax Highlighting
 ```ruby
