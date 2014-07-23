@@ -14,8 +14,10 @@ process acts as a dynamically moving baseline from which a hyperdirect "Stop" pr
 In the event that a stop signal is encountered, the hyperdirect pathway must override the current 
 level of "Go" evidence in order to suppress the evolving motor response.
 
+![Image of RADD Model](https://www.evernote.com/shard/s430/sh/32a45049-3261-4351-8bb5-6ca01c89d696/175f70d699366ee88e50e0e0fd53aea9)
 
-###Features
+
+####Features
 -----------
 
 * Includes models of proactive and reactive stopping.
@@ -34,9 +36,9 @@ level of "Go" evidence in order to suppress the evolving motor response.
   single-unit electrophysiological data.
 
 
-###Future Development
+####Future Development
 ---------------------
-* Currently RADD is in very early stages of development and requires the user to define values
+* Currently RADD is in *very early* stages of development and requires the user to define values
   for model parameters (undefined parameters assume default values (which can be found in 
   [Matzke & Wagenmakers, 2009](http://www.ejwagenmakers.com/2009/MatzkeWagenmakers2009.pdf)).
   However, future releases will include parameter fitting routines.
@@ -51,7 +53,7 @@ level of "Go" evidence in order to suppress the evolving motor response.
   methods, +
 
 
-###Examples
+####Examples
 
 Below is an example of how to simulate several conditions in a typical proactive stop-signal task.
 Numerous other "pre-release" (and poorly documented) examples are availabe in the form of 
