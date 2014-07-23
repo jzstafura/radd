@@ -1,7 +1,6 @@
 ## RADD: Race Against Drift-Diffusion model of sensorimotor inhibition and decision-making
 
-### Summary
-***__________________________________________________________________________________***
+## Summary
 
 RADD is a python module for modeling the underlying dynamics of motor inhibition
 as a combination of two widely utilized conceptual frameworks: race models of response inhibtion
@@ -18,8 +17,7 @@ level of "Go" evidence in order to suppress the evolving motor response.
 
 
 
-### Features
-***__________________________________________________________________________________***
+## Features
 
 * Includes models of proactive and reactive stopping.
 
@@ -38,8 +36,7 @@ level of "Go" evidence in order to suppress the evolving motor response.
 
 
 
-### Future Development
-***__________________________________________________________________________________***
+## Future Development
 
 * Currently RADD is in *very early* stages of development and requires the user to define values
   for model parameters (undefined parameters assume default values (which can be found in 
@@ -57,15 +54,14 @@ level of "Go" evidence in order to suppress the evolving motor response.
 
 
 
-### Examples
-***__________________________________________________________________________________***
+## Examples
 
 Below is an example of how to simulate several conditions in a typical proactive stop-signal task.
 Numerous other "pre-release" (and poorly documented) examples are availabe in the form of 
 iPython Notebooks at [RADD IPyNb's](http://nbviewer.ipython.org/github/dunovank/pynb/tree/master/).
 
 
-##### import libraries & define global parameters
+#### import libraries & define global parameters
 ```python
 from radd import ss, psy, simfx
 
@@ -73,7 +69,7 @@ a=.37; z=.5*a; Ter=.347; eta=.14; st=.0001; sz=.0001; s2=.01; xpo=[12, 12.29]; p
 mu_ss=-2.17; ssTer=.099; ssRe_TB=.653; ssPro_TB=.6; nt=1000; sTB=.00001; ssTer_var=.0001
 ```
 
-##### simulate behavior under different probabilities of "Go" as a change in the drift-rate
+#### simulate behavior under different probabilities of "Go" as a change in the drift-rate
 ```python
 out=[]
 
