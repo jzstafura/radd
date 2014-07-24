@@ -33,6 +33,7 @@
 *.log
 *.sql
 *.sqlite
+*.sublime-*
  
 # OS generated files #
 ######################
