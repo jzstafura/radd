@@ -7,12 +7,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from itertools import cycle
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from simfx import sim_radd, sim_ss, sustained_integrator, integrator
+from simfx import sim_radd, sim_ss, sustained_integrator, integrator, sim_ddm
 
 sns.set(font="Helvetica")
 
-def set_model(gParams=None, sParams=None, mfx=sim_exp, ntrials=100, timebound=0.653, task='ssRe', visual=False, t_exp=False, 
-	exp_scale=[10, 10], predictBOLD=False, save=False):
+def set_model(gParams=None, sParams=None, mfx=sim_radd, ntrials=100, timebound=0.653, task='ssRe', visual=False, t_exp=False, 
+	exp_scale=[10, 10], predictBOLD=False, save=False, return_dataframe=False):
 
 	"""
 	set_model: instantiates ddm parameters and call simulation method (mfx)
@@ -103,7 +103,10 @@ def set_model(gParams=None, sParams=None, mfx=sim_exp, ntrials=100, timebound=0.
 
 		f.savefig(savestr+".png", format='png', dpi=600)
 
-	return sim_data
+	if return_dataframe:
+		return df_abr
+	else:
+		return sim_data
 
 def get_intervar_ranges(parameters):
 	"""

@@ -4,6 +4,7 @@ from scipy import *
 from pylab import *
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.patches import FancyArrow 
 import scipy.optimize
 import seaborn as sns
 import pandas as pd
@@ -32,7 +33,7 @@ def res(arr,lower=0.0,upper=1.0):
     return arr
 
 
-def fit_scurves(ysim=None, task='ssRe', showPSE=True):
+def fit_scurves(ysim=None, task='ssRe', showPSE=True, ax=None, labels=None, **kwargs):
 	
 	plt.ion()
 	sns.set(style='white', font="Helvetica")
@@ -53,23 +54,37 @@ def fit_scurves(ysim=None, task='ssRe', showPSE=True):
 		scale_factor=10
 	
 	x=res(-x,lower=x[-1]/10, upper=x[0]/10)
-	#ydata=res(ydata, lower=ydata[-1], upper=ydata[0])
 	
 	if ysim is None:
 		ysim=ydata
 		
 	ys=[ydata[0], ydata[1], ysim[0], ysim[1]]
+
+	if ax is None:
+
+		f = plt.figure(figsize=(8,9.5)) 
+		f.subplots_adjust(top=0.95, wspace=0.12, left=0.19, right=0.98, bottom=0.15)	
+		ax = f.add_subplot(111)
 	
-	f = plt.figure(figsize=(7.5,7.5)) 
-	f.subplots_adjust(top=0.95, wspace=0.12, left=0.19, right=0.98, bottom=0.15)
-	ax = f.add_subplot(111)
+	else:
+		#f=fig
+		#ax=f.add_subplot(122)
+		ax=ax
+
+
 	sns.despine()
 	
 	i=0; empPSE=[]; simPSE=[]
+
+	if "colors" in kwargs:
+		colors=kwargs['colors']
+	else:
+		#colors=['MediumBlue', '#E60000', '#1975FF', '#E6005C']
+		colors=['MediumBlue', '#E60000', 'Blue', 'Red']
+		#marker_colors=['Blue', 'Red']
+	label_list=['Emp BSL','Emp PNL', 'Sim BSL', 'Sim PNL']
+
 	for y in ys:
-		
-		colors=['MediumBlue', '#E60000', '#1975FF', '#E6005C']#'#1975FF', '#FF0066']
-		label_list=['EmpBSL','EmpPNL', 'SimBSL', 'SimPNL']
 		
 		y=res(y, lower=y[-1], upper=y[0])
 		
@@ -96,40 +111,42 @@ def fit_scurves(ysim=None, task='ssRe', showPSE=True):
 		
 		# Plot the results
 		if i==2 or i==3:
-			ax.plot(xp, pxp, '--', lw=4.5, color=colors[i], label=label_list[i])
-			ax.plot(x, y, marker='o', color=colors[i], ms=20, lw=0, mfc='none', mew=2.4, mec=colors[i], alpha=.3)
+			ax.plot(xp, pxp, '--', lw=5.0, color=colors[i], label=label_list[i])
+			ax.plot(x, y, marker='o', color=colors[i], ms=16, lw=0, mfc='none', mew=2.4, mec=colors[i])
 			simPSE.append(xp[idx]/scale_factor)
-			
+
 		else:
-			ax.plot(xp, pxp, '-', lw=8, color=colors[i], alpha=.39, label=label_list[i])
-			ax.plot(x, y, marker='o', color=colors[i], ms=9, lw=0)
+			ax.plot(xp, pxp, '-', lw=10, color=colors[i], alpha=.35, label=label_list[i])
+			ax.plot(x, y, marker='o', color=colors[i], ms=14, lw=0, alpha=.35)
 			empPSE.append(xp[idx]/scale_factor)
-			
+
 		i+=1
-		
+
 	ssPSE=[empPSE, simPSE]
 	ax.set_ylim(0, 1.05)
 	
 	if task=='ssRe':
 		ax.set_xlim(18, 45)
-		ax.set_xlabel('SSD (ms)', fontsize=30)
+		ax.set_xlabel('SSD (ms)', fontsize=34)
 		ax.set_xticks(np.arange(20, 45, 5))
-		ax.set_xticklabels(np.arange(200, 450, 50), fontsize=24)
+		ax.set_xticklabels(np.arange(200, 450, 50), fontsize=26)
 	else:
-		ax.set_xlim(-1.5, 11.5)
-		ax.set_xlabel('P(Go)', fontsize=30)
+		ax.set_xlim(-1.0, 11.0)
+		ax.set_xlabel('P(Go)', fontsize=34)
 		ax.set_xticks(np.arange(0, 12, 2))
-		ax.set_xticklabels(np.arange(0, 1.2, .20), fontsize=24)
+		ax.set_xticklabels(np.arange(0, 1.2, .20), fontsize=26)
 	
-	ax.set_ylim(0, 1.05)	
 	ax.set_yticks(np.arange(0, 1.2, .2))	
-	plt.setp(ax.get_yticklabels(), fontsize=24)	
-	ax.set_ylabel('P(Stop)', fontsize=30, labelpad=10) 
-	ax.legend(loc=0, fontsize=24)
+	plt.setp(ax.get_yticklabels(), fontsize=26)	
+	ax.set_ylabel('P(Inhibit)', fontsize=34, labelpad=11) 
 	
-	yy, locs = plt.yticks()
-	ll = ['%.2f' % a for a in yy]
-	plt.yticks(yy, ll)
+	if labels is not None:
+		label_list=['Emp BSL','Emp PNL', 'Sim BSL', 'Sim PNL']
+		ax.legend(loc=0, fontsize=26)
+	
+	#yy, locs = plt.yticks()
+	#ll = ['%.2f' % a for a in yy]
+	#plt.yticks(yy, ll)
 
 	plt.savefig("stopsigmoid_%s%s" % (task, ".png"), format='png', dpi=600)
 	plt.savefig("stopsigmoid_%s%s" % (task, ".svg"), rasterized=True, dpi=600)
@@ -137,6 +154,7 @@ def fit_scurves(ysim=None, task='ssRe', showPSE=True):
 	if showPSE:
 		ssrtFig=plotPSE(ssPSE=ssPSE, task=task)
 
+	return ax
 
 def plot_goRTs(sim_rt=None, task='ssRe'):
 	
@@ -183,9 +201,9 @@ def plot_goRTs(sim_rt=None, task='ssRe'):
 	ax.set_xticks(x)
 	ax.set_xticklabels(['BSL', 'PNL'], fontsize=28)
 
-	#yy, locs = plt.yticks()
-	#ll = ['%.3f' % a for a in yy]
-	#plt.yticks(yy, ll)
+	yy, locs = plt.yticks()
+	ll = ['%.3f' % a for a in yy]
+	plt.yticks(yy, ll)
 
 	plt.savefig("GoRT_%s%s" % (task, ".png"), format='png', dpi=600)
 	plt.savefig("GoRT_%s%s" % (task, ".svg"), rasterized=True, dpi=600)
@@ -246,49 +264,116 @@ def plotPSE(ssPSE=None, task='ssRe'):
 	return f
 
 
-def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, ncurves=5, labels=None, predict_brain=False):
+def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, ncurves=5, labels=None, x=None):
+
+	plt.ion()
+
+	sns.set(style='white', font="Helvetica")
+	npoints=len(ysim[0])
+	xsim=np.linspace(-5, 110, 10000)
+	scale_factor=10
+
+	x=np.array(np.linspace(1, 100, npoints), dtype='float')
+	xxticks=x/scale_factor
+	xxticklabels=x/100
+	xxlim=(-.5, 11)
+	xxlabel='P(Go)'
+
+	if task=='ssRe':
+		xxlabel='SSD (ms)'
+		xxticklabels=np.arange(200, 500, 50)
+		
+	x=res(-x,lower=x[-1]/10, upper=x[0]/10)
+
+	pse=[]
+	f = plt.figure(figsize=(6, 7)) 
+	f.subplots_adjust(top=0.95, wspace=0.12, left=0.19, right=0.98, bottom=0.15)	
+	ax = f.add_subplot(111)
+
+	sns.despine()
+
+	colors = sns.blend_palette(["LimeGreen", "Navy"], len(ysim))
+
+	if labels!=None:
+		labels=labels
+	else:
+		labels=['C'+str(i) for i in range(len(ysim))]
+
+	for i, yi in enumerate(ysim):
+
+		y=res(yi, lower=yi[-1], upper=yi[0])
+
+		p_guess=(np.median(x),np.median(y),1.0,1.0)
+		p, cov, infodict, mesg, ier = scipy.optimize.leastsq(
+		    residuals,p_guess,args=(x,y),full_output=1)
+    	
+		x0,y0,c,k=p
+
+		xp = xsim 
+		pxp=sigmoid(p,xp)
+
+		idx = (np.abs(pxp - pstop)).argmin()
+
+		# Plot the results
+		ax.plot(xp, pxp, '-', lw=7.5, color=colors[i], alpha=.6, label=labels[i])
+
+		pse.append(xp[idx]/scale_factor)
+
+	ax.set_xlim(xxlim)
+	ax.set_xlabel(xxlabel, fontsize=28)
+	ax.set_xticks(xxticks)
+	ax.set_xticklabels(xxticklabels, fontsize=20)
+	ax.set_ylim(0, 1.05)	
+
+	plt.setp(ax.get_yticklabels(), fontsize=20)	
+	ax.set_ylabel('P(Inhibit)', fontsize=28, labelpad=10) 
+	ax.legend(loc=0, fontsize=20)
+
+	#if os.path.isdir("/Users/kyle"):
+	#	plt.savefig("/Users/kyle/ReProFactorial_SCurves%s%s" % (task, ".png"), format='png', dpi=600)
+	#	f.savefig("/Users/kyle/Dropbox/CoAx/ss/simdata/ReProFactorial_SCurves%s%s" % (task, ".svg"), rasterized=True, dpi=600)	
+	#	plt.savefig("/Users/kyle/Dropbox/CoAx/ss/simdata/ReProFactorial_SCurves%s%s" % (task, ".png"), format='png', dpi=600)	
+	#elif os.path.isdir("/home/kyle"):
+	#	f.savefig("/home/kyle/Dropbox/CoAx/ss/simdata/ReProFactorial_SCurves%s%s" % (task, ".svg"), rasterized=True, dpi=600)	
+	#	plt.savefig("/home/kyle/Dropbox/CoAx/ss/simdata/ReProFactorial_SCurves%s%s" % (task, ".png"), format='png', dpi=600)
+
+	pse=pse
+
+	return pse
+
+
+def factorial_scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, ncurves=5, labels=None, predict_brain=False):
 	
 	plt.ion()
-	if predict_brain:
-		ysim=[ysim, ysim]
-		#xsim=np.linspace(15, 50, 10000)
-		#scale_factor=100
+
 	sns.set(style='white', font="Helvetica")
 	npoints=len(ysim[0])
 	xsim=np.linspace(-5, 120, 10000)
 	scale_factor=10
 	
-	#if predict_brain:
-	#	ysim=[ysim, ysim]
-		#xsim=np.linspace(15, 50, 10000)
-		#scale_factor=100
-	
 	x=np.array(np.linspace(10, 100, npoints), dtype='float')
-	#xsim=np.linspace(-5, 120, 10000)
 	xxticks=x/scale_factor
 	xxticklabels=x/100
 	xxlim=(0, 10.5)
 	xxlabel='P(Go)'
 	
 	if task=='ssRe':
-		xxlabel='SSD'
+		xxlabel='SSD (ms)'
 		xxticks=x/scale_factor
 		xxticklabels=np.arange(250, 550, 50)
 	
 	x=res(-x,lower=x[-1]/10, upper=x[0]/10)
 	
 	pse=[]
-	f = plt.figure(figsize=(8,9.5)) 
-	f.subplots_adjust(top=0.95, wspace=0.12, left=0.19, right=0.98, bottom=0.15)	
-	ax = f.add_subplot(111)
-
+	
+	f=plt.figure(figsize=(16, 9.5))
+	ax = plt.subplot2grid((4, 2), (0, 0), colspan=1, rowspan=4)
+	ax2 = plt.subplot2grid((4, 2), (0, 1), colspan=1, rowspan=4)
 	sns.despine()
 	
-	colors = sns.blend_palette(["LimeGreen", "Navy"], len(ysim))
+	colors = sns.blend_palette(["LimeGreen", "#1919A3"], len(ysim)+1)
 	
-	if labels!=None:
-		labels=labels
-	else:
+	if labels is None:
 		labels=['C'+str(i) for i in range(len(ysim))]
 	
 	for i, yi in enumerate(ysim):
@@ -313,36 +398,145 @@ def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, ncurves=5, labels=No
 			return x_at_pstop
 
 		# Plot the results
-		ax.plot(xp, pxp, '-', lw=7.5, color=colors[i], alpha=.6, label=labels[i])
-		#ax.plot(x, y, marker='o', color=colors[i], ms=10, lw=0)
+		ax.plot(xp, pxp, '-', lw=8, color=colors[i], alpha=.6, label=labels[i])
 		
 		pse.append(xp[idx]/scale_factor)
 
-	if 'Re' in task:
-		plt.vlines(x=450, ymin=0, ymax=1, lw=20, color='k', alpha=.2)
+	ax.vlines(x=xxticks[-2], ymin=0, ymax=1, lw=20, color='k', alpha=.3)
 	
+	p = FancyArrow(0.432, 0.55, 0.098, 0.0, width=0.005,
+		length_includes_head=False, lw=3.5, fc='DarkGray', ec='DarkGray',
+		head_width=.02, head_length=.02, 
+		shape='full', overhang=0, 
+		head_starts_at_zero=False, 
+		transform=ax.figure.transFigure, 
+		clip_on=False) 
+	ax.add_patch(p) 
+
+	pbsl=np.array([0.92266667,  0.745, 0.46633333, 0.231, 0.015, 0.00233333], dtype='float')#[::-1]#, 0.00233333], dtype='float')[::-1]
+	#ppnl=np.array([0.93533333, 0.752, 0.501, 0.22033333, 0.018, 0.00266667], dtype='float')
+	#ax2 = fit_scurves(ysim=[pbsl, ppnl], task='ssPro', showPSE=False, ax=ax2)
+	kwargs = {'line_colors':['Gray', 'Gray'], 'point_colors':colors}
+	
+	ax2 = basic_curves(ysim=[pbsl, pbsl], task='ssPro', showPSE=False, ax=ax2, line_colors=['Gray', 'Gray'], point_colors=colors[::-1])#**kwargs)	
+
 	ax.set_xlim(xxlim)
-	ax.set_xlabel(xxlabel+' (ms)', fontsize=34)
+	ax.set_xlabel(xxlabel, fontsize=34)
 	ax.set_xticks(xxticks)
 	ax.set_xticklabels(xxticklabels, fontsize=26)
 	ax.set_ylim(0, 1.05)	
-	
-	plt.setp(ax.get_yticklabels(), fontsize=26)	
+		
 	ax.set_ylabel('P(Inhibit)', fontsize=34, labelpad=11) 
+	ax2.set_ylabel("", fontsize=0)
+	plt.setp(ax.get_yticklabels(), fontsize=26)
+	plt.setp(ax2.get_yticklabels(), visible=False)
+
 	ax.legend(loc=0, fontsize=26)
-	
+
+	plt.tight_layout(w_pad=4.5, h_pad=2)#h_pad=3, w_pad=1)
+
 	if os.path.isdir("/Users/kyle"):
-		plt.savefig("/Users/kyle/ReProFactorial_SCurves%s%s" % (task, ".png"), format='png', dpi=600)
-		f.savefig("/Users/kyle/Dropbox/CoAx/ss/simdata/ReProFactorial_SCurves%s%s" % (task, ".svg"), rasterized=True, dpi=600)	
-		plt.savefig("/Users/kyle/Dropbox/CoAx/ss/simdata/ReProFactorial_SCurves%s%s" % (task, ".png"), format='png', dpi=600)	
+		f.savefig("/Users/kyle/Dropbox/CoAx/SS/FactorialSims/ReProFactorial_SCurves_%s%s" % (task, ".svg"), rasterized=True, dpi=600)	
+		plt.savefig("/Users/kyle/Dropbox/CoAx/SS/FactorialSims/ReProFactorial_SCurves_%s%s" % (task, ".png"), format='png', dpi=600)	
 	elif os.path.isdir("/home/kyle"):
 		f.savefig("/home/kyle/Dropbox/CoAx/ss/simdata/ReProFactorial_SCurves%s%s" % (task, ".svg"), rasterized=True, dpi=600)	
 		plt.savefig("/home/kyle/Dropbox/CoAx/ss/simdata/ReProFactorial_SCurves%s%s" % (task, ".png"), format='png', dpi=600)
 
-	pse=pse
-	
-	return pse
+	return f
 
+def basic_curves(ysim=None, task='ssRe', showPSE=True, ax=None, labels=None, pstop=.05, **kwargs):
+	
+	plt.ion()
+
+	sns.set(style='white', font="Helvetica")
+
+	npoints=len(ysim[0])
+	
+	if task=='ssRe':
+		x=np.array([400, 350, 300, 250, 200], dtype='float')
+		xsim=np.linspace(15, 50, 10000)
+		scale_factor=100
+	else:
+		x=np.array([100, 80, 60, 40, 20, 0], dtype='float')
+		xsim=np.linspace(-5, 10, 10000)
+		scale_factor=10
+		#x=np.array(np.linspace(10, 100, npoints), dtype='float')
+		xxticks=x/scale_factor
+		xxticklabels=x/100
+		xxlim=(-0.5, 10.5)
+		xxlabel='P(Go)'
+
+	x=res(-x,lower=x[-1]/10, upper=x[0]/10)
+	
+	if ax is None:
+		f = plt.figure(figsize=(8,9.5)) 
+		f.subplots_adjust(top=0.95, wspace=0.12, left=0.19, right=0.98, bottom=0.15)	
+		ax = f.add_subplot(111)
+	else:
+		ax=ax
+
+	sns.despine()
+
+	if 'line_colors' not in kwargs:
+		line_colors = sns.blend_palette(["LimeGreen", "Navy"], len(ysim))
+		point_colors = sns.blend_palette(["Black", "Black"], len(ysim))
+	else:
+		line_colors = kwargs['line_colors']
+		point_colors = kwargs['point_colors']
+
+	if labels!=None:
+		labels=labels
+	else:
+		labels=['C'+str(i) for i in range(len(ysim))]
+
+	for i, yi in enumerate(ysim):
+
+		y=res(yi, lower=yi[-1], upper=yi[0])
+
+		p_guess=(np.median(x),np.median(y),1.0,1.0)
+		p, cov, infodict, mesg, ier = scipy.optimize.leastsq(
+		    residuals,p_guess,args=(x,y),full_output=1)
+    	
+		x0,y0,c,k=p
+
+		xp = xsim 
+		pxp=sigmoid(p,xp)
+
+		idx = (np.abs(pxp - pstop)).argmin()
+
+		# Plot the results
+		ax.plot(xp, pxp, '-', lw=7.5, color=line_colors[i], alpha=.4, label=labels[i])
+		
+		i=0
+		
+		#for i, ypoint in enumerate(y):
+		for ypoint in y:
+			plt.plot(x[i], ypoint, marker='o', color=point_colors[i], ms=18, lw=0, alpha=.5)
+			i+=1
+		#ax.plot(x, y, marker='o', color=colors[i], ms=10, lw=0)
+		#pse.append(xp[idx]/scale_factor)
+
+	if 'Re' in task:
+		plt.vlines(x=450, ymin=0, ymax=1, lw=20, color='k', alpha=.2)
+
+	ax.set_xlim(xxlim)
+	ax.set_xlabel(xxlabel, fontsize=34)
+	ax.set_xticks(xxticks)
+	ax.set_xticklabels(xxticklabels, fontsize=26)
+	ax.set_ylim(-0.05, 1.05)	
+
+	plt.setp(ax.get_yticklabels(), fontsize=26)	
+	ax.set_ylabel('P(Inhibit)', fontsize=34, labelpad=11) 
+	
+	#ax.legend(loc=0, fontsize=26)
+	#yy, locs = plt.yticks()
+	#ll = ['%.2f' % a for a in yy]
+	#plt.yticks(yy, ll)
+
+	#plt.savefig("stopsigmoid_%s%s" % (task, ".png"), format='png', dpi=600)
+	#plt.savefig("stopsigmoid_%s%s" % (task, ".svg"), rasterized=True, dpi=600)
+
+	return ax
 
 def predict_neural_integrator(m={}, arr=np.arange(0, 1, .1), task='ssReBSL', plot=True):
 
