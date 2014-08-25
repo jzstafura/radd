@@ -13,7 +13,6 @@ import ss
 
 sns.set(font="Helvetica")
 
-
 def sigmoid(p,x):
     x0,y0,c,k=p
     y = c / (1 + np.exp(k*(x-x0))) + y0
@@ -328,15 +327,7 @@ def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, ncurves=5, labels=No
 	plt.setp(ax.get_yticklabels(), fontsize=20)	
 	ax.set_ylabel('P(Inhibit)', fontsize=28, labelpad=10) 
 	ax.legend(loc=0, fontsize=20)
-
-	#if os.path.isdir("/Users/kyle"):
-	#	plt.savefig("/Users/kyle/ReProFactorial_SCurves%s%s" % (task, ".png"), format='png', dpi=600)
-	#	f.savefig("/Users/kyle/Dropbox/CoAx/ss/simdata/ReProFactorial_SCurves%s%s" % (task, ".svg"), rasterized=True, dpi=600)	
-	#	plt.savefig("/Users/kyle/Dropbox/CoAx/ss/simdata/ReProFactorial_SCurves%s%s" % (task, ".png"), format='png', dpi=600)	
-	#elif os.path.isdir("/home/kyle"):
-	#	f.savefig("/home/kyle/Dropbox/CoAx/ss/simdata/ReProFactorial_SCurves%s%s" % (task, ".svg"), rasterized=True, dpi=600)	
-	#	plt.savefig("/home/kyle/Dropbox/CoAx/ss/simdata/ReProFactorial_SCurves%s%s" % (task, ".png"), format='png', dpi=600)
-
+	
 	pse=pse
 
 	return pse
@@ -413,12 +404,13 @@ def factorial_scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, ncurves=5,
 		clip_on=False) 
 	ax.add_patch(p) 
 
+	emp_ProBSL=np.array([0.931, 0.744, 0.471, 0.240, 0.034, 0.005], dtype='float')
 	pbsl=np.array([0.92266667,  0.745, 0.46633333, 0.231, 0.015, 0.00233333], dtype='float')#[::-1]#, 0.00233333], dtype='float')[::-1]
 	#ppnl=np.array([0.93533333, 0.752, 0.501, 0.22033333, 0.018, 0.00266667], dtype='float')
 	#ax2 = fit_scurves(ysim=[pbsl, ppnl], task='ssPro', showPSE=False, ax=ax2)
 	kwargs = {'line_colors':['Gray', 'Gray'], 'point_colors':colors}
 	
-	ax2 = basic_curves(ysim=[pbsl, pbsl], task='ssPro', showPSE=False, ax=ax2, line_colors=['Gray', 'Gray'], point_colors=colors[::-1])#**kwargs)	
+	ax2 = basic_curves(ysim=[pbsl, emp_ProBSL], task='ssPro', showPSE=False, ax=ax2, line_colors=['Gray', 'Black'], point_colors=colors[::-1])#**kwargs)	
 
 	ax.set_xlim(xxlim)
 	ax.set_xlabel(xxlabel, fontsize=34)
@@ -505,14 +497,19 @@ def basic_curves(ysim=None, task='ssRe', showPSE=True, ax=None, labels=None, pst
 		idx = (np.abs(pxp - pstop)).argmin()
 
 		# Plot the results
-		ax.plot(xp, pxp, '-', lw=7.5, color=line_colors[i], alpha=.4, label=labels[i])
+		if i==0:
+			ax.plot(xp, pxp, '-', lw=7.5, color=line_colors[i], alpha=.6, label=labels[i])
+		else:
+			ax.plot(xp, pxp, '--', lw=7.5, color=line_colors[i], alpha=.45, label=labels[i])
 		
-		i=0
-		
+		ci=0
 		#for i, ypoint in enumerate(y):
 		for ypoint in y:
-			plt.plot(x[i], ypoint, marker='o', color=point_colors[i], ms=18, lw=0, alpha=.5)
-			i+=1
+			if i==0:
+				plt.plot(x[ci], ypoint, marker='o', color=point_colors[ci], ms=19, lw=0, alpha=.55)
+			else:
+				plt.plot(x[ci], ypoint, marker='o', color=point_colors[ci], ms=22,  mfc='none', mew=2.5, mec=point_colors[ci],  lw=0, alpha=1)
+			ci+=1
 		#ax.plot(x, y, marker='o', color=colors[i], ms=10, lw=0)
 		#pse.append(xp[idx]/scale_factor)
 

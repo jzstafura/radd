@@ -5,7 +5,7 @@ import numpy as np
 import time
 from scipy import stats
 
-def sim_radd(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, time_bias=0, exp_scale=[10,10], integrate=False):
+def sim_radd(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10], integrate=False):
 
 	"""
 
@@ -75,11 +75,11 @@ def sim_radd(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=F
 			
 			# if r < p then move up
 			if r < p:
-				e = e + dx + timebias	
+				e = e + dx# + timebias	
 				
 			# else move down
 			else:
-				e = e - dx + timebias
+				e = e - dx# + timebias
 			
 			elist.append(e)
 			tlist.append(t)
@@ -134,10 +134,90 @@ def sim_radd(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=F
 	
 	if not integrate:
 		ithalamus='null'
+	
 	return t, choice, evidence_lists, timestep_lists, ithalamus
 
 
-def sustained_integrator(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, time_bias=0, exp_scale=[10,10], integrate=False):
+
+def thal(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[12, 12.29], **kwargs):
+
+	"""
+	args:
+		:: mu = mean drift-rate
+		:: s2 = diffusion coeff
+		:: TR = non-decision time
+		:: a  = boundary height
+		:: z  = starting-point 
+
+	returns:
+	 	rt (float): 	decision time
+		choice (str):	a/b 		
+		elist (list):	list of sequential/cumulative evidence
+		tlist (list):	list of sequential timesteps
+	"""
+	tb=0
+	tau=.0001		# time per step of the diffusion
+	dx=np.sqrt(s2*tau)  	# dx is the step size up or down.
+	gti=0; ss_ti=0
+	thalamus=[z]
+	tsteps=[0]
+
+	if TR>ssd and ss_trial:
+		t=ssd	# start the time at ssd
+	else:		# or
+		t=TR	# start the time at TR
+
+	while 0<thalamus[-1]<a: #e<a and e>0 and e_ss>0: 
+
+		if t>=timebound:
+			break
+		
+		t = t + tau
+
+		if t >= TR:
+			
+			#tb = tb + tau
+			#timebias=(np.exp(exp_scale[0]*tb))/(np.exp(exp_scale[1]))
+		
+			# r is between 0 and 1
+			r=np.random.random_sample()
+			p=0.5*(1 + mu*dx/s2)
+			
+			if r < p:
+				gti = dx #+ timebias
+			else:
+				gti = -dx #+ timebias	
+
+		if ss_trial and t >= ssd:
+	
+			r_ss=np.random.random_sample()
+			p_ss=0.5*(1 + mu_ss*dx/s2)
+			
+			if r_ss < p_ss:
+				ss_ti = dx
+			else:
+				ss_ti = -dx
+
+		thal_i=gti+ss_ti
+
+		thalamus.append(thalamus[-1]+thal_i)
+		
+		tsteps.append(t)
+
+	
+	if thalamus[-1] >= a:
+		choice = 'go'
+	else:
+		choice = 'stop'
+	
+	paths=[thalamus, thalamus]
+	timesteps=[tsteps, tsteps]
+	
+	return t, choice, paths, timesteps, thalamus
+
+
+
+def sustained_integrator(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10], integrate=False):
 
 	"""
 
@@ -272,7 +352,7 @@ def sustained_integrator(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653
 	return t, choice, evidence_lists, timestep_lists, ithalamus
 
 
-def integrator(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, time_bias=0, exp_scale=[10,10]):
+def integrator(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10]):
 
 	"""
 
@@ -494,9 +574,9 @@ def sim_ss(mu, s2, TR, a, z, mu_ss=-6, ssd=.450, timebound=0.653, ss_trial=False
 		elif e<=0 or e_ss<=0:
 			choice = 'stop'
 
-	return t, choice, evidence_lists, timestep_lists
+	return t, choice, evidence_lists, timestep_lists, 1.0
 
-def sim_ddm(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, time_bias=0, exp_scale=[10,10], integrate=False):
+def sim_ddm(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10], integrate=False):
 
 	"""
 
@@ -628,7 +708,7 @@ def sim_ddm(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=Fa
 	return t, choice, evidence_lists, timestep_lists, ithalamus
 
 
-def sim_ssex(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, time_bias=0, exp_scale=[10,10]):
+def sim_ssex(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10]):
 
 
 	#DEPRECATED METHOD
