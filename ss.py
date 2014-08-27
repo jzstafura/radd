@@ -13,7 +13,7 @@ import utils
 sns.set(font="Helvetica")
 
 def set_model(gParams=None, sParams=None, mfx=sim_radd, ntrials=100, timebound=0.653, s2=.01, task='ssRe', visual=False,
-	exp_scale=[12, 12.29], predictBOLD=False, save=False, get_trials_df=False):
+	exp_scale=[12, 12.29], predictBOLD=False, save=False, return_all=False, return_all_beh=False):
 
 	"""
 	set_model: instantiates ddm parameters and call simulation method (mfx)
@@ -55,8 +55,6 @@ def set_model(gParams=None, sParams=None, mfx=sim_radd, ntrials=100, timebound=0
 		tb = stb * np.random.randn() + timebound
 		sp['ss_On'] = sp['ssd'] + (sp['ssTer_lo'] + np.random.uniform() * (sp['ssTer_hi'] - sp['ssTer_lo']))
 
-
-
 		rt, choice, path, tsteps, ithalamus = mfx(gp['mu'], s2, gp['TR'],gp['a'],gp['ZZ'], mu_ss=sp['mu_ss'], 
 			ssd=sp['ss_On'], timebound=tb, exp_scale=exp_scale, ss_trial=ss_bool, integrate=predictBOLD)	
 		
@@ -75,30 +73,21 @@ def set_model(gParams=None, sParams=None, mfx=sim_radd, ntrials=100, timebound=0
 	
 	
 	df=pd.DataFrame({"trial":np.arange(ntrials), "rt":rt_list, "choice":choice_list, "acc":acc_list, 
-		"go_tsteps": go_tsteps_list, "go_paths":go_paths_list, "ss_tsteps":ss_tsteps_list, 
+		"go_tsteps": go_tsteps_list, "go_paths":go_paths_list, "ss_tsteps":ss_tsteps_list, "thalamus":thalamus,
 		"ss_paths":ss_paths_list, "tparams":trial_params_list, "len_go_tsteps":len_go_tsteps_list, 
-		"len_ss_tsteps":len_ss_tsteps_list, "trial_type":trial_type_list})
+		"len_ss_tsteps":len_ss_tsteps_list, "trial_type":trial_type_list, "ssd":[sp['ssd']]*ntrials, "pGo":[sp['pGo']]*ntrials})
 
 	df_abr=df.drop(['go_tsteps', 'go_paths', 'ss_tsteps', 'ss_paths', 'tparams'], axis=1)
-
-	if predictBOLD:
-		
-		df_bold=df_abr.copy()
-
-		df_bold['thalamus']=thalamus
-		
-		#df_out=pBOLD(df_bold, task='Re')
-		
-		return df_bold
 
 	if save:
 		savefx(df_abr)
 
-	GoRT, pS, sAcc, GoRT_Err = anl(df_abr)
-	sim_data=[GoRT, pS, sAcc, GoRT_Err]
-
+	#GoRT, pS, sAcc, GoRT_Err = anl(df_abr)
+	
+	sim_data=anl(df_abr)
+	
 	if visual:
-		f=plot_decisions(df=df, pGo=sp['pGo'], sim_data=sim_data, timebound=timebound, exp_scale=exp_scale, task=task[:4])
+		f=plot_decisions(df=df, pGo=sp['pGo'], ssd=sp['ssd'], timebound=timebound, exp_scale=exp_scale, task=task[:4])
 		
 		if 'Re' in task:
 			savestr="%s_SSD%sms" % (task, str(int(sp['ssd']*1000)))
@@ -108,7 +97,9 @@ def set_model(gParams=None, sParams=None, mfx=sim_radd, ntrials=100, timebound=0
 		pth=utils.find_path()
 		f.savefig(pth+"CoAx/SS/"+savestr+".png", format='png', dpi=600)
 
-	if get_trials_df:
+	if return_all:
+		return df
+	elif return_all_beh:
 		return df_abr
 	else:
 		return sim_data
@@ -199,49 +190,63 @@ def pBOLD(df):
 
 def anl(df):
 	
-	GoRT=df.ix[(df['trial_type']=='go')&(df['acc']==1), 'rt'].mean()
-	GoRT_Err=df.ix[(df['trial_type']=='stop')&(df['acc']==0), 'rt'].mean() 
-	pS=len(df.ix[(df['choice']=='stop')])/len(df)
-	sAcc=df.ix[(df['trial_type']=='stop'), 'acc'].mean()
+	if isinstance(df, tuple):
+		indx=df[0]; df=df[1]
+	else:
+		indx=np.arange(4)
+
+	go_rt_cor=df.ix[(df['trial_type']=='go')&(df['acc']==1), 'rt'].mean()
+	go_rt_all=df.ix[(df['trial_type']=='go'), 'rt'].mean()
+	go_rt_err=df.ix[(df['trial_type']=='stop')&(df['acc']==0), 'rt'].mean() 
+	pstop=len(df.ix[(df['choice']=='stop')])/len(df)
+	stop_acc=df.ix[(df['trial_type']=='stop'), 'acc'].mean()
 	
-	return GoRT, pS, sAcc, GoRT_Err
+	return pd.Series({'go_rt_cor':go_rt_cor, 'go_rt_all':go_rt_all, 'go_rt_err':go_rt_err, 'pstop':pstop, 'stop_acc':stop_acc})
 
 
-def plot_decisions(df, pGo=0.5, sim_data=[], timebound=0.653, task='ssPro', t_exp=False, exp_scale=[10,10], animate=False):
+def plot_decisions(df, pGo=0.5, ssd=.300, timebound=0.653, task='ssPro', t_exp=False, exp_scale=[10,10], animate=False):
 
 	plt.ion()
 	sns.set(style='white', font="Helvetica")
-	
-	a=list(pd.Series(df['tparams']))[0]['a']
-	z=list(pd.Series(df['tparams']))[0]['z']
-	Ter=list(pd.Series(df['tparams']))[0]['Ter']
-	lb=0
 
+	lb=0
+	
 	ss_tsteps=list(pd.Series(df.ix[(df['choice']=='stop'), 'ss_tsteps']))
 	ss_paths=list(pd.Series(df.ix[(df['choice']=='stop'), 'ss_paths']))
 	go_tsteps=list(pd.Series(df.ix[(df['choice']=='go'), 'go_tsteps']))
 	go_paths=list(pd.Series(df.ix[(df['choice']=='go'), 'go_paths']))
-
 	choices=list(pd.Series(df['choice']))
+	
+	try:
+		a=np.average([xdict['a'] for xdict in list(pd.Series(df['tparams']))])
+		z=np.average([xdict['z'] for xdict in list(pd.Series(df['tparams']))])
+		Ter=np.average([xdict['Ter'] for xdict in list(pd.Series(df['tparams']))])
+		print "list comprehension succeeded: plotting with mean sx params"
+	except Exception:
+		print "list comprehension failed"
+		a=list(pd.Series(df['tparams']))[0]['a']
+		z=list(pd.Series(df['tparams']))[0]['z']
+		Ter=list(pd.Series(df['tparams']))[0]['Ter']
+	
+	print "a: %s\nz: %s\nt: %s" % (str(a), str(z), str(Ter))
 	
 	if 'Re' in task:
 		pG=df.ix[(df['trial_type']=='go'), 'acc'].mean()
 		pS=df.ix[(df['trial_type']=='stop'), 'acc'].mean()
-		GoRT=df.ix[(df['trial_type']=='go')&(df['acc']==1), 'rt'].mean()
-		GoRT=df.ix[(df['trial_type']=='go')&(df['acc']==1), 'rt'].std()
 		GoLabel='Go Acc'; ssLabel='Stop Acc'
 	
 	elif 'Pr' in task:
-		pS=len(df.ix[(df['choice']=='stop')])/len(df)
 		pG=len(df.ix[(df['choice']=='go')])/len(df)
-		go_rt=df.ix[(df['choice']=='go'), 'rt'].mean()
-		go_rt_std=df.ix[(df['choice']=='go'), 'rt'].std()
+		pS=len(df.ix[(df['choice']=='stop')])/len(df)
 		GoLabel='P(Go)'; ssLabel='P(Stop)'
-	
+
+	go_rt_all=df.ix[(df['choice']=='go'), 'rt'].mean()
+	go_rt_cor=df.ix[(df['trial_type']=='go')&(df['acc']==1), 'rt'].mean()
+	go_rt_std=df.ix[(df['choice']=='go'), 'rt'].std()
 	ssrt=df.ix[(df['choice']=='stop'), 'rt'].mean()
 	ssrt_std=df.ix[(df['choice']=='stop'), 'rt'].std()
-	
-	sns.set_style("white")
+
+
 	f = plt.figure(figsize=(10,7))
 	ax = f.add_subplot(111)
 
@@ -263,6 +268,7 @@ def plot_decisions(df, pGo=0.5, sim_data=[], timebound=0.653, task='ssPro', t_ex
 	plt.hlines(y=z, xmin=xlim[0], xmax=Ter, lw=6, color='k', alpha=.5)
 	plt.vlines(x=xlim[0], ymin=lb, ymax=a, lw=4, color='k')
 	plt.vlines(x=timebound, ymin=lb, ymax=a, lw=.8, color='Red')
+	plt.plot(ssd, z, marker='x', ms=15, mew=6, color='Firebrick', alpha=.7)
 	
 	sns.despine(fig=f, ax=ax,top=True, bottom=True, left=False, right=False)
 
@@ -277,16 +283,13 @@ def plot_decisions(df, pGo=0.5, sim_data=[], timebound=0.653, task='ssPro', t_ex
 		animate_paths(ax, go_tsteps, go_paths, ss_tsteps, ss_paths, choices, colors)
 	else:
 		for sst, ssp in zip(ss_tsteps, ss_paths):
-			if len(sst)<=1:
+			if len(ssp)<=1:
 				continue
-			else:
-				del sst[0]
-				del ssp[0]
 			c=next(cycle_ss)
 			ax.plot(sst, ssp, color=c, alpha=.15, lw=1)
 		for t,p in zip(go_tsteps, go_paths):
-			del t[0]
-			del p[0]
+			if len(p)<=1:
+				continue
 			c=next(cycle_go)
 			ax.plot(t, p, color=c, alpha=.05, lw=1)
 
@@ -306,19 +309,21 @@ def plot_decisions(df, pGo=0.5, sim_data=[], timebound=0.653, task='ssPro', t_ex
 			c_kde='Crimson'
 
 		if len(data)<=1: continue
-		sns.distplot(np.array(data['rt']), kde=True, ax=axx, kde_kws={"color": c_corr, "shade":True, "lw": 3.5, "alpha":.5},
-			hist_kws={"color": c_corr, "alpha":.7});
+		sns.distplot(np.array(data['rt']), kde=True, ax=axx, kde_kws={"color": c_corr, "shade":True, "lw": 3.5, "alpha":.3},
+			hist_kws={"histtype": "stepfilled", "color": c_corr, "alpha":.5});
 		#sns.kdeplot(np.array(data['rt']), shade=True, ax=axx, color=c_corr, lw=3.5)
 
-	hi.set_xticklabels([]); hi.set_yticklabels([]); lo.set_yticklabels([]); lo.set_xticklabels([]), lo.invert_yaxis();
-	ax.set_xticklabels([]); ax.set_yticklabels([]); f.subplots_adjust(hspace=0)
+	lo.set_xticklabels([]); hi.set_xticklabels([]); ax.set_xticklabels([]);  
+	hi.set_yticklabels([]); lo.set_yticklabels([]); ax.set_yticklabels([]); 
+	lo.invert_yaxis(); f.subplots_adjust(hspace=0)
 
-	hi.text(.07, .8, r'$\mu_{GoRT}=%s$' % (str(go_rt)[:5]), fontsize=14, va='center', ha='left', transform=hi.transAxes, color='Green')
-	hi.text(.07, .5, r'$\sigma_{GoRT}=%s$' % (str(go_rt_std)[:5]), fontsize=14, va='center', ha='left', transform=hi.transAxes, color='Green')
-	hi.text(.07, .2, r'$%s=%s$' % (GoLabel, str(pG)[:5]), fontsize=14, va='center', ha='left', transform=hi.transAxes, color='Green')
-	lo.text(.07, .8, r'$\mu_{ssRT}=%s$' % (str(ssrt)[:5]), fontsize=14, va='center', ha='left', transform=lo.transAxes, color='Red')
-	lo.text(.07, .5, r'$\sigma_{ssRT}=%s$' % (str(ssrt_std)[:5]), fontsize=14, va='center', ha='left', transform=lo.transAxes, color='Red')
-	lo.text(.07, .2, r'$%s=%s$' % (ssLabel, str(pS)[:5]), fontsize=14, va='center', ha='left', transform=lo.transAxes, color='Red')
+
+	hi.text(.02, .8, r'$\mu_{GoRT}=%s\ (all),\ \ %s\ (correct)$' % (str(go_rt_all)[:5], str(go_rt_cor)[:5]), fontsize=14, transform=hi.transAxes, color='Green')
+	hi.text(.02, .5, r'$\sigma_{GoRT}=%s$' % (str(go_rt_std)[:5]), fontsize=14, va='center', ha='left', transform=hi.transAxes, color='Green')
+	hi.text(.02, .2, r'$%s=%s$' % (GoLabel, str(pG)[:5]), fontsize=14, va='center', ha='left', transform=hi.transAxes, color='Green')
+	lo.text(.02, .8, r'$\mu_{ssRT}=%s$' % (str(ssrt)[:5]), fontsize=14, va='center', ha='left', transform=lo.transAxes, color='Red')
+	lo.text(.02, .5, r'$\sigma_{ssRT}=%s$' % (str(ssrt_std)[:5]), fontsize=14, va='center', ha='left', transform=lo.transAxes, color='Red')
+	lo.text(.02, .2, r'$%s=%s$' % (ssLabel, str(pS)[:5]), fontsize=14, va='center', ha='left', transform=lo.transAxes, color='Red')
 
 	f.suptitle(r'$P(Stop Trial)=%s\,\,&\,\,P(Go Trial)=%s$' % (str(1-pGo), str(pGo)), fontsize=16)
 

@@ -29,8 +29,8 @@ def sub_dists(data, nbins=18, save=True):
 		f=plt.figure()
 		ax = f.add_subplot(111, xlabel='RT', ylabel='count', title='Go RT distributions')
 		
-		if len(sxdata.rt>18):
-			ax.hist(sxdata.rt, color='LimeGreen', lw=1.5, bins=nbins, histtype='stepfilled', alpha=0.)
+		if len(sxdata.rt)>18:
+			ax.hist(sxdata.rt, color='LimeGreen', lw=1.5, bins=nbins, histtype='stepfilled', alpha=0.3)
 			ax.grid()
 		else:
 			continue

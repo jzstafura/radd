@@ -176,8 +176,8 @@ def thal(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False
 
 		if t >= TR:
 			
-			#tb = tb + tau
-			#timebias=(np.exp(exp_scale[0]*tb))/(np.exp(exp_scale[1]))
+			tb = tb + tau
+			timebias=(np.exp(exp_scale[0]*tb))/(np.exp(exp_scale[1]))
 		
 			# r is between 0 and 1
 			r=np.random.random_sample()
@@ -207,11 +207,12 @@ def thal(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False
 	
 	if thalamus[-1] >= a:
 		choice = 'go'
+		paths=[thalamus, [0]]
+		timesteps=[tsteps, [0]]
 	else:
 		choice = 'stop'
-	
-	paths=[thalamus, thalamus]
-	timesteps=[tsteps, tsteps]
+		paths=[[0], thalamus]
+		timesteps=[[0],tsteps]
 	
 	return t, choice, paths, timesteps, thalamus
 
@@ -505,7 +506,6 @@ def sim_ss(mu, s2, TR, a, z, mu_ss=-6, ssd=.450, timebound=0.653, ss_trial=False
 	
 		t=TR	# start the time at TR
 
-	t=TR		        # start the time at TR
  	tau=.0001			# time per step of the diffusion
 	choice=None			# init choice as NoneType
 	dx=np.sqrt(s2*tau)  # calculate dx (step size)
@@ -630,9 +630,7 @@ def sim_ddm(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=Fa
 		
 		if t>=TR:
 			
-			#if tb==0:
-				#timebias=0
-			#else:
+
 			tb = tb + tau
 			timebias=(np.exp(num*tb))/(np.exp(denom))
 		
