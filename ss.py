@@ -13,7 +13,7 @@ import utils
 sns.set(font="Helvetica")
 
 def set_model(gParams=None, sParams=None, mfx=sim_radd, ntrials=100, timebound=0.653, s2=.01, task='ssRe', visual=False,
-	exp_scale=[12, 12.29], predictBOLD=False, save=False, return_all=False, return_all_beh=False):
+	exp_scale=[12, 12.29], predictBOLD=False, save=False, return_all=False, return_all_beh=False, condition_str=None):
 
 	"""
 	set_model: instantiates ddm parameters and call simulation method (mfx)
@@ -76,6 +76,9 @@ def set_model(gParams=None, sParams=None, mfx=sim_radd, ntrials=100, timebound=0
 		"go_tsteps": go_tsteps_list, "go_paths":go_paths_list, "ss_tsteps":ss_tsteps_list, "thalamus":thalamus,
 		"ss_paths":ss_paths_list, "tparams":trial_params_list, "len_go_tsteps":len_go_tsteps_list, 
 		"len_ss_tsteps":len_ss_tsteps_list, "trial_type":trial_type_list, "ssd":[sp['ssd']]*ntrials, "pGo":[sp['pGo']]*ntrials})
+
+	if condition_str:
+		df['condition']=[condition_str]*len(df)
 
 	df_abr=df.drop(['go_tsteps', 'go_paths', 'ss_tsteps', 'ss_paths', 'tparams'], axis=1)
 

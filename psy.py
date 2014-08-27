@@ -155,6 +155,57 @@ def fit_scurves(ysim=None, task='ssRe', showPSE=True, ax=None, labels=None, **kw
 
 	return ax
 
+def go_rt_evs(sim_rt=None, emp_rt=None, emp_err=None, sim_err=None, task='ssRe'):
+	
+	plt.ion()
+	sns.set(style='white', font="Helvetica")
+	sns.set_context('poster')
+	
+	x=np.array([1,2])
+	xsim=np.array([1.1, 1.9])
+	
+	sim_rt=np.array([rt*1000 for rt in sim_rt])
+	emp_rt=np.array([rt*1000 for rt in emp_rt])
+	sim_err=np.array([rt*1000 for rt in sim_err])
+	emp_err=np.array([rt*1000 for rt in emp_err])
+
+	f = plt.figure(figsize=(5.5, 6.5)) 
+	ax = f.add_subplot(111)
+	sns.despine()
+	
+	ax.bar(x, emp_rt, yerr=emp_err, color='#441B5F', align='center', error_kw=dict(elinewidth=3, ecolor='black'), alpha=.8)
+	childrenLS=ax.get_children()
+	barlist=filter(lambda x: isinstance(x, matplotlib.patches.Rectangle), childrenLS)
+	barlist[1].set_color('#195E19')
+	
+	ax.errorbar(xsim, sim_rt, yerr=sim_err, color='k', marker='o', mfc=None, ms=16, lw=3, mew=4, mec='k', ecolor='k', elinewidth=3, capsize=0)
+	ax.plot(xsim[0], sim_rt[0], marker='o', color='#9900FF', ms=15)
+	ax.plot(xsim[1], sim_rt[1], marker='o', color='#339933', ms=15)
+
+	ax.set_xlim(0.5, 2.5)
+	ax.set_xticks(x)
+	
+	if 'Re' in task:
+		ylim=[550, 580]
+		ax.set_xticklabels(['BSL', 'PNL'], fontsize=22)	
+		ax.set_xlabel('Feedback Condition', fontsize=28)
+	else:
+		ylim=[520,550]
+		ax.set_xticklabels(['Low', 'High'], fontsize=22)
+		ax.set_xlabel('Go Probabiltiy', fontsize=28)
+
+	ax.set_ylim(ylim[0], ylim[1])	
+	ax.set_yticks(np.arange(ylim[0], ylim[1]+10, 10))
+	ax.set_yticklabels(np.arange(ylim[0], ylim[1]+10, 10), fontsize=20)
+	ax.set_ylabel('Go RT (ms)', fontsize=28)
+
+	yy, locs = plt.yticks()
+	plt.tight_layout()
+
+	plt.savefig("GoRT_%s%s" % (task, ".png"), format='png', dpi=300)
+	plt.savefig("GoRT_%s%s" % (task, ".svg"), rasterized=True, dpi=300)
+
+
 def plot_goRTs(sim_rt=None, task='ssRe'):
 	
 	plt.ion()
@@ -206,7 +257,8 @@ def plot_goRTs(sim_rt=None, task='ssRe'):
 
 	plt.savefig("GoRT_%s%s" % (task, ".png"), format='png', dpi=600)
 	plt.savefig("GoRT_%s%s" % (task, ".svg"), rasterized=True, dpi=600)
-	
+
+
 def plotPSE(ssPSE=None, task='ssRe'):
 	
 	plt.ion()
