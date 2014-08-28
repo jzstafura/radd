@@ -87,7 +87,7 @@ def sim_sx(df, sp=None, ssd=.450, pGo_list=[], mfx=simfx.sim_radd, ntrials=500, 
 
 	simdf_list=[]
 	if sp is None:
-		sp={'mu_ss':-3, 'ssd':ssd, 'ssTer':0.0, 'ssTer_var':0.0}
+		sp={'mu_ss':-1.95, 'ssd':ssd, 'ssTer':0.0, 'ssTer_var':0.0}
 
 	for sx, sxdf in df.groupby(['subj_idx']):
 		
@@ -99,7 +99,7 @@ def sim_sx(df, sp=None, ssd=.450, pGo_list=[], mfx=simfx.sim_radd, ntrials=500, 
 		vlist=[params[drift]*.1 for drift in params.keys() if containsAll(list(drift), set(["v","("]))] 
 		conditions=[c.split('(')[1][:-1] for c in params.keys() if '(' in c]
 		
-		if 'Re' in task or not pGo_list:
+		if 'Re' in task or len(pGo_list)==0:
 			pGo_list=np.ones(len(vlist))
 
 		gp={'a':a, 'z':z, 'Ter':params['t'], 'eta':params['sv'], 'st':0.000001, 'sz':0.000001}
