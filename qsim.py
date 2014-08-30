@@ -23,47 +23,27 @@ import os
 #vlist_bsl=[0.073, 0.26, 0.4385, 0.601, 0.93, 1.09]
 #vlist_pnl=[0.05, 0.23, 0.425, 0.601, 0.93, 1.09]
 
-
-def sim_re(gp, sp, ssdlist=[.4, .35, .3, .25, .20], sim_func=simfx.sim_radd, ntrials=1500, task='ssReBSL', visual=False):
-
-	re_rt=[]; re_p=[]; re_sacc=[]
-	#gp={'a':a, 'z':z, 'v':re_v, 'Ter':Ter, 'eta':eta, 'st':st, 'sz':sz}
-	
-	for ssd in ssdlist:
-		
-		#sp={'mu_ss':mu_ss, 'pGo':.5, 'ssd':ssd, 'ssTer':ssTer, 'ssTer_var':ssTer_var}
-		sp['ssd']=ssd
-		
-		out=ss.set_model(gParams=gp, sParams=sp, mfx=sim_func, ntrials=ntrials, timebound=tb, visual=visual, task=task)
-		
-		re_rt.append(out[0]); re_p.append(out[1]); re_sacc.append(out[2])
-
-	df=pd.DataFrame({'goRT': re_rt, 'stopAcc': re_sacc})
-
-	return df
-
-
-def simConditions(gp, sp, vlist, pGo_list=[0, .2, .4, .6, .8, 1], ssd=.450, mfx=simfx.sim_radd, ntrials=1500, return_all=False, 
-	return_all_beh=False, tb=.560, task='ssProBSL', visual=False, conditions=[]):
+def simConditions(gp, sp, vlist, pGo_list=[0, .2, .4, .6, .8, 1], ssd=.450, mfx=simfx.sim_radd, ntrials=1500, return_all=False, return_all_beh=False, tb=.560, task='ssProBSL', visual=False, conditions=[]):
 
 	simdf_list=[]
 
-	if 'ssd' not in sp.keys():
-		sp['ssd']=ssd
-	
-	for i,v in enumerate(vlist):
-		
+	for i,v in enumerate(vlist):	
 		gp['v']=v
 		sp['pGo']=pGo_list[i]
+		sp['ssd']=ssd
 
 		out=ss.set_model(gParams=gp, sParams=sp, mfx=mfx, ntrials=ntrials, timebound=tb, 
-			visual=visual, task=task, return_all=return_all, return_all_beh=return_all_beh, condition_str=conditions[i]) 
+			visual=visual, task=task, return_all=return_all, return_all_beh=return_all_beh, 
+			condition_str=conditions[i]) 
 
 		simdf_list.append(out)
 	
-	all_df=pd.concat(simdf_list)
-
-	return all_df
+	
+	if len(simdf_list)>1:
+		return pd.concat(simdf_list)
+	
+	else: 
+		return simdf_list
 
 
 def plot_evs(bsl, pnl, bsl_GoRT, pnl_GoRT, task='ssRe'):
@@ -83,11 +63,11 @@ def containsAll(strr, sett):
     return 0 not in [c in strr for c in sett]
 
 
-def sim_sx(df, sp=None, ssd=.450, pGo_list=[], mfx=simfx.sim_radd, ntrials=500, tb=.560, task='ssProBSL'):
+def sim_sx(df, sp=None, ssdlist=[.450], pGo_list=[], mfx=simfx.sim_radd, ntrials=500, tb=.560, task='ssProBSL'):
 
 	simdf_list=[]
 	if sp is None:
-		sp={'mu_ss':-1.95, 'ssd':ssd, 'ssTer':0.0, 'ssTer_var':0.0}
+		sp={'mu_ss':-1.95, 'ssTer':0.0, 'ssTer_var':0.0}
 
 	for sx, sxdf in df.groupby(['subj_idx']):
 		
@@ -99,10 +79,11 @@ def sim_sx(df, sp=None, ssd=.450, pGo_list=[], mfx=simfx.sim_radd, ntrials=500, 
 		vlist=[params[drift]*.1 for drift in params.keys() if containsAll(list(drift), set(["v","("]))] 
 		conditions=[c.split('(')[1][:-1] for c in params.keys() if '(' in c]
 		
-		if 'Re' in task or len(pGo_list)==0:
-			pGo_list=np.ones(len(vlist))
-
 		gp={'a':a, 'z':z, 'Ter':params['t'], 'eta':params['sv'], 'st':0.000001, 'sz':0.000001}
+		
+		if 'Re' in task or len(pGo_list)==0:
+			pGo_list=np.ones(len(vlist))*.5
+			ssdlist=np.arange(.20, .45, .05)
 
 		simdf=simConditions(gp, sp, vlist=vlist, pGo_list=pGo_list, mfx=mfx, tb=tb, ntrials=ntrials, 
 			conditions=conditions, return_all=True)
@@ -120,13 +101,13 @@ def sim_sx(df, sp=None, ssd=.450, pGo_list=[], mfx=simfx.sim_radd, ntrials=500, 
 		summary['condition']=[c]*len(summary)
 		condition_summaries.append(summary)
 	
-	pth=utils.find_path()
 	sim_summary=pd.concat(condition_summaries).sort_index()
 	
+	pth=utils.find_path()
 	if 'Re' in task:
-		sim_summary.to_csv(pth+"CoAx/SS/HDDM/Reactive/sxfit_summary.csv")
+		sim_summary.to_csv(pth+"CoAx/SS/HDDM/Reactive/sxfit_summary_new.csv")
 	else:
-		sim_summary.to_csv(pth+"CoAx/SS/HDDM/Proactive/sxfit_summary.csv")
+		sim_summary.to_csv(pth+"CoAx/SS/HDDM/Proactive/sxfit_summary_new.csv")
 	
 	return sim_summary
 

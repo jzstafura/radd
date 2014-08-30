@@ -10,7 +10,7 @@ from simfx import *
 from utils import find_path
 from patsy import dmatrix
 
-def make_fit_ssv(gp, sp, **kwargs):
+def make_fit_ssv(gp, sp, task='ssPro'):
 
 	def fit_ssv(x, ssv):
 		
@@ -28,10 +28,9 @@ def make_fit_ssv(gp, sp, **kwargs):
 
 			sp['mu_ss']=ssv
 
-			sim_data=ss.set_model(gParams=gp, sParams=sp, mfx=sim_radd, ntrials=nt, timebound=ssPro_TB, t_exp=True, 
-                       exp_scale=xpo, visual=False, task='ssReBSL', predictBOLD=False)
+			sim_data=ss.set_model(gParams=gp, sParams=sp, mfx=thal, ntrials=1000, timebound=.560, task=task)
 			
-			yhat.append(sim_data[output_index])
+			yhat.append(sim_data[output_ix])
 
 		return yhat
 
@@ -140,7 +139,7 @@ def stats_summary(param_df):
 
 	return summary_df
 
-def get_mean_params(df, depends='v', plist=['a', 't', 'v'], zbias=False, inter_var=False):
+def get_MeanHDDM(df, depends='v', plist=['a', 't', 'v'], zbias=False, inter_var=False):
 
 	#plist.remove(depends)
 
@@ -165,4 +164,46 @@ def get_mean_params(df, depends='v', plist=['a', 't', 'v'], zbias=False, inter_v
 
 	return param_dict
 
+
+def init_ssfitfx(gp, sp, task='ssPro'):
+
+	if 'Re' in task:
+		x=np.arange(.25,.5, .05)
+		#y_bsl=
+		#y_pnl=
+
+		ydata=np.array([y_bsl, y_pnl])
+	else:
+		x=np.array([1.0,2.0], dtype='float') #np.arange(0, 1, .2)
+		y_hi=np.mean([0.931, 0.744, 0.471])
+		y_lo=np.mean([0.240, 0.034, 0.005])
+		ydata=np.array([y_hi, y_lo], dtype='float')
+
+	popt, pcov = curve_fit(make_fit_ssv(gp, sp, task=task), x, ydata, sp['mu_ss'])
+
+	return [popt, pcov]
+
+
+def chisqg(ydata,ymod,sd=None):
+
+      	"""  
+	Returns the chi-square error statistic as the sum of squared errors between  
+	Ydata(i) and Ymodel(i). If individual standard deviations (array sd) are supplied,   
+	then the chi-square error statistic is computed as the sum of squared errors  
+	divided by the standard deviations.     Inspired on the IDL procedure linfit.pro.  
+	See http://en.wikipedia.org/wiki/Goodness_of_fit for reference.  
+	  
+	x,y,sd assumed to be Numpy arrays. a,b scalars.  
+	Returns the float chisq with the chi-square statistic.  
+	  
+	Rodrigo Nemmen  
+	http://goo.gl/8S1Oo  
+      	"""  
+      	# Chi-square statistic (Bevington, eq. 6.9)  
+	if sd==None:  
+		chisq=numpy.sum((ydata-ymod)**2)  
+	else:  
+		chisq=numpy.sum( ((ydata-ymod)/sd)**2 )  
+
+	return chisq 
 	
