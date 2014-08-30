@@ -5,7 +5,7 @@ from pylab import *
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrow 
-import scipy.optimize
+import scipy.optimize as opt
 import seaborn as sns
 import pandas as pd
 import os
