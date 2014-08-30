@@ -68,14 +68,10 @@ def set_model(gParams=None, sParams=None, mfx=sim_radd, ntrials=100, timebound=0
 		else:
 			acc=0
 
-		rt_list.append(rt); choice_list.append(choice); trial_params_list.append(gp); acc_list.append(acc); 
-		len_go_tsteps_list.append(len_go_tsteps); len_ss_tsteps_list.append(len_ss_tsteps); trial_type_list.append(trial_type)
+		rt_list.append(rt); choice_list.append(choice); trial_params_list.append(gp); acc_list.append(acc); len_go_tsteps_list.append(len_go_tsteps); len_ss_tsteps_list.append(len_ss_tsteps); trial_type_list.append(trial_type)
 	
 	
-	df=pd.DataFrame({"trial":np.arange(ntrials), "rt":rt_list, "choice":choice_list, "acc":acc_list, 
-		"go_tsteps": go_tsteps_list, "go_paths":go_paths_list, "ss_tsteps":ss_tsteps_list, "thalamus":thalamus,
-		"ss_paths":ss_paths_list, "tparams":trial_params_list, "len_go_tsteps":len_go_tsteps_list, 
-		"len_ss_tsteps":len_ss_tsteps_list, "trial_type":trial_type_list, "ssd":[sp['ssd']]*ntrials, "pGo":[sp['pGo']]*ntrials})
+	df=pd.DataFrame({"trial":np.arange(ntrials), "rt":rt_list, "choice":choice_list, "acc":acc_list, "go_tsteps": go_tsteps_list, "go_paths":go_paths_list, "ss_tsteps":ss_tsteps_list, "thalamus":thalamus, "ss_paths":ss_paths_list, "tparams":trial_params_list, "len_go_tsteps":len_go_tsteps_list, "len_ss_tsteps":len_ss_tsteps_list, "trial_type":trial_type_list, "ssd":[sp['ssd']]*ntrials, "pGo":[sp['pGo']]*ntrials})
 
 	if condition_str:
 		df['condition']=[condition_str]*len(df)
@@ -102,7 +98,7 @@ def set_model(gParams=None, sParams=None, mfx=sim_radd, ntrials=100, timebound=0
 
 	if return_all:
 		return df
-	elif return_all_beh:
+	if return_all_beh:
 		return df_abr
 	else:
 		return sim_data
