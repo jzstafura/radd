@@ -6,8 +6,6 @@ RADD is a python package for modeling the underlying dynamics of motor inhibitio
 as a combination of two widely utilized conceptual frameworks: race models of response inhibtion
 and drift-diffusion models of decision-making.
 
-![Image of RADD](https://www.evernote.com/shard/s430/sh/8ce6464a-a304-411f-b26c-32162ceba3bc/56d47bbfbaf44a531a03c03fd4a21438/res/cc0f6f25-969a-44e7-a490-eec2386ee6ac/a.ssRe%20Final%20Fits%20and%20Figures.ipynb.jpg?resizeSmall&width=832&alpha=)
-
 RADD seeks to explain both proactive and reactive forms of response inhibition within a unified
 framework in which the competition between direct ("Go") and indirect ("No Go") pathways is modeled
 as a stochastic accumulation of evidence between "Respond" and "Inhibit" boundaries. This diffusion 
@@ -23,7 +21,7 @@ level of "Go" evidence in order to suppress the evolving motor response.
 
 * Flexible control over parameter dependencies.
 
-* Optimize "Go" parameters using wrapper for [HDDM](https://github.com/hddm-devs/hddm) (Wiecki, Sofer, & Frank, 2014)
+* Optimize "Go" parameters using wrapper for HDDM ([Wiecki, Sofer, & Frank, 2014](http://journal.frontiersin.org/Journal/10.3389/fninf.2013.00014/abstract))
 
 * Include dynamic bias signal (see [Hanks et al., 2011](http://www.jneurosci.org/content/31/17/6339.full.pdf))
 
@@ -51,7 +49,7 @@ Numerous other "pre-release" (and poorly documented) examples are availabe in th
 iPython Notebooks at [RADD IPyNb's](http://nbviewer.ipython.org/github/dunovank/pynb/tree/master/).
 
 
-##### |optimize go parameters (using wrapper for [HDDM](https://github.com/hddm-devs/hddm))|
+##### optimize go parameters (via [HDDM](https://github.com/hddm-devs/hddm))
 ```python
 import pandas as pd
 from radd import ss, ft, qsim
@@ -76,7 +74,8 @@ simdf = qsim.sim_ssv_range(params=vbias_stats, ssvlist=ssvlist, task='ssRe', ntr
     
 ```
 
-##### References
+
+#### References
 
 Hanks, T. D., Mazurek, M. E., Kiani, R., Hopp, E., & Shadlen, M. N. (2011). Elapsed decision time affects the weighting of prior probability in a perceptual decision task. The Journal of Neuroscience, 31(17), 6339-6352.
 
