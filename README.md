@@ -34,7 +34,7 @@ level of "Go" evidence in order to suppress the evolving motor response.
 
 
 
-## Future Development Goals
+## Future Goals
 
 * easy package management and installation (i.e. via pip or conda), proper 
   documentation and tutorials, goodness of fit statistics and additional model comparison
