@@ -5,7 +5,7 @@ import numpy as np
 import time
 from scipy import stats
 
-def sim_radd(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10], integrate=False):
+def sim_radd(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10], integrate=False, visual=False, depHyper=True, **kwargs):
 
 	"""
 
@@ -35,7 +35,7 @@ def sim_radd(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=F
 	
 	tb=0				# init the exp time bias to 0
 	choice=None			# init choice as NoneType
- 	tau=.0001			# time per step of the diffusion
+ 	tau=.0001			# time per step of the diffusions
 	dx=np.sqrt(s2*tau)  # dx is the step size up or down.
 	e=z		     		# starting point
 	e_ss=z				#arbitrary (positive) init value
@@ -91,7 +91,7 @@ def sim_radd(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=F
 			
 			#test if stop signal has started yet.
 			#if not, then start at current position of "go/nogo" DV: e
-			if not ss_started:
+			if not ss_started and depHyper:
 				ss_started=True
 				e_ss=e
 				
@@ -135,11 +135,13 @@ def sim_radd(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=F
 	if not integrate:
 		ithalamus='null'
 	
-	return t, choice, evidence_lists, timestep_lists, ithalamus
+	if visual:
+		return t, choice, evidence_lists, timestep_lists, ithalamus
+	else:
+		return t, choice
 
 
-
-def thal(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[12, 12.29], **kwargs):
+def thal(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[12, 12.29], integrate=False, visual=False, depHyper=True, **kwargs):
 
 	"""
 	args:
@@ -161,23 +163,24 @@ def thal(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False
 	gti=0; ss_ti=0
 	thalamus=[z]
 	tsteps=[0]
+	thal_i=z
+	choice=None
+	denom=exp_scale[1]
+	num=exp_scale[0]
+	no_choice_yet=True
 
 	if TR>ssd and ss_trial:
 		t=ssd	# start the time at ssd
 	else:		# or
 		t=TR	# start the time at TR
 
-	while 0<thalamus[-1]<a: #e<a and e>0 and e_ss>0: 
-
-		if t>=timebound:
-			break
+	while t<timebound: #e<a and e>0 and e_ss>0: 
 		
 		t = t + tau
-
 		if t >= TR:
 			
-			tb = tb + tau
-			timebias=(np.exp(exp_scale[0]*tb))/(np.exp(exp_scale[1]))
+			#tb = tb + tau
+			#timebias=(np.exp(exp_scale[0]*tb))/(np.exp(exp_scale[1]))
 		
 			# r is between 0 and 1
 			r=np.random.random_sample()
@@ -189,7 +192,6 @@ def thal(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False
 				gti = -dx #+ timebias	
 
 		if ss_trial and t >= ssd:
-	
 			r_ss=np.random.random_sample()
 			p_ss=0.5*(1 + mu_ss*dx/s2)
 			
@@ -198,23 +200,108 @@ def thal(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False
 			else:
 				ss_ti = -dx
 
-		thal_i=gti+ss_ti
-
-		thalamus.append(thalamus[-1]+thal_i)
-		
+		thalamus.append(thalamus[-1]+gti+ss_ti)
 		tsteps.append(t)
-
+		
+		if thalamus[-1]>=a and no_choice_yet:
+			rt=t
+			choice = 'go'
+			no_choice_yet=False
 	
-	if thalamus[-1] >= a:
-		choice = 'go'
+	if choice=='go':#np.array(thalamus).max() >= a:
 		paths=[thalamus, [0]]
 		timesteps=[tsteps, [0]]
 	else:
 		choice = 'stop'
-		paths=[[0], thalamus]
-		timesteps=[[0],tsteps]
-	
-	return t, choice, paths, timesteps, thalamus
+		rt = t
+		paths = [[0], thalamus]
+		timesteps = [[0],tsteps]
+
+	if visual:
+		return rt, choice, paths, timesteps, thalamus
+	else:
+		return rt, choice
+
+
+def simIndependentPools(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[12, 12.29], integrate=False, visual=False, depHyper=True, **kwargs):
+
+	tb=0
+	tau=.0001		# time per step of the diffusion
+	dx=np.sqrt(s2*tau)  	# dx is the step size up or down.
+	choice=None
+	denom=exp_scale[1]; num=exp_scale[0]
+	a=a-z; b=-z; z=0
+	gti=0; ss_ti=0
+	thalamus=[z]; tsteps=[TR]
+	hyper_tsteps=[ssd]; hyperthal=[z]; no_choice_yet=True
+	normp=True
+
+	if TR>ssd and ss_trial:
+		t=ssd	# start the time at ssd
+	else:		# or
+		t=TR	# start the time at TR
+
+
+	while t<timebound: #e<a and e>0 and e_ss>0: 
+		
+		t = t + tau
+		
+		if t >= TR:
+			
+			#tb = tb + tau
+			#timebias=(np.exp(exp_scale[0]*tb))/(np.exp(exp_scale[1]))
+		
+			# r is between 0 and 1
+			r=np.random.random_sample()
+			p=0.5*(1 + mu*dx/s2)
+			
+			if r < p:
+				gti = dx #+ timebias
+			else:
+				gti = -dx #+ timebias
+
+			thalamus.append(thalamus[-1]+gti)
+			tsteps.append(t)	
+
+		if ss_trial and t >= ssd:
+
+			r_ss=np.random.random_sample()
+			p_ss=0.5*(1 + mu_ss*dx/s2)
+
+			if r_ss < p_ss:
+				ss_ti = dx
+			else:
+				ss_ti = -dx
+
+			hyper_tsteps.append(t)
+			hyperthal.append(hyperthal[-1]+ss_ti)
+		
+		if thalamus[-1]+hyperthal[-1]>=a and no_choice_yet:
+			rt=t
+			mu=0
+			choice = 'go'
+			no_choice_yet = False
+
+		if thalamus[-1]+hyperthal[-1]<=b and no_choice_yet:
+			rt = 0
+			mu_ss=0
+			choice = 'stop'
+			no_choice_yet = False
+
+	if choice is not None:
+		paths = [thalamus, hyperthal]
+		timesteps = [tsteps, hyper_tsteps]
+	elif choice is None and t>=timebound:
+		choice='stop'; rt=t
+		paths = [thalamus, hyperthal]
+		timesteps = [tsteps, hyper_tsteps]
+	else:
+		print "what the fuck..."
+
+	if visual:
+		return rt, choice, paths, timesteps, normp
+	else:
+		return rt, choice
 
 
 

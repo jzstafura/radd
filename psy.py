@@ -1,4 +1,5 @@
 #!/usr/local/bin/env python
+from __future__ import division
 import scipy
 from scipy import *
 from pylab import *
@@ -10,6 +11,7 @@ import seaborn as sns
 import pandas as pd
 import os
 import ss
+import utils
 
 sns.set(font="Helvetica")
 
@@ -56,6 +58,7 @@ def fit_scurves(ysim=None, task='ssRe', showPSE=True, ax=None, labels=None, **kw
 	
 	if ysim is None:
 		ysim=ydata
+		skip_sim_plots=True
 		
 	ys=[ydata[0], ydata[1], ysim[0], ysim[1]]
 
@@ -64,13 +67,11 @@ def fit_scurves(ysim=None, task='ssRe', showPSE=True, ax=None, labels=None, **kw
 		f = plt.figure(figsize=(8,9.5)) 
 		f.subplots_adjust(top=0.95, wspace=0.12, left=0.19, right=0.98, bottom=0.15)	
 		ax = f.add_subplot(111)
-	
+
 	else:
-		#f=fig
-		#ax=f.add_subplot(122)
 		ax=ax
-
-
+		x=kwargs['x']
+	
 	sns.despine()
 	
 	i=0; empPSE=[]; simPSE=[]
@@ -115,6 +116,7 @@ def fit_scurves(ysim=None, task='ssRe', showPSE=True, ax=None, labels=None, **kw
 			simPSE.append(xp[idx]/scale_factor)
 
 		else:
+			colors=['MediumBlue', '#E60000', 'Blue', 'Red']
 			ax.plot(xp, pxp, '-', lw=10, color=colors[i], alpha=.35, label=label_list[i])
 			ax.plot(x, y, marker='o', color=colors[i], ms=14, lw=0, alpha=.35)
 			empPSE.append(xp[idx]/scale_factor)
@@ -258,6 +260,11 @@ def plot_goRTs(sim_rt=None, task='ssRe'):
 	plt.savefig("GoRT_%s%s" % (task, ".png"), format='png', dpi=600)
 	plt.savefig("GoRT_%s%s" % (task, ".svg"), rasterized=True, dpi=600)
 
+def makePivot(df, cols='ssd', index=None, rows=None, values='stop_acc', func=np.average):
+
+	pvot=pd.pivot_table(df, index=index, rows=rows, columns=cols, values=values, aggfunc=func)
+
+	return pvot
 
 def plotPSE(ssPSE=None, task='ssRe'):
 	
@@ -304,7 +311,7 @@ def plotPSE(ssPSE=None, task='ssRe'):
 		ax.set_yticklabels(np.arange(.34, .44, .02), fontsize=24)
 	
 	ax.set_ylabel('PSE', fontsize=30)
-	
+
 	yy, locs = plt.yticks()
 	ll = ['%.2f' % a for a in yy]
 	plt.yticks(yy, ll)
@@ -315,9 +322,10 @@ def plotPSE(ssPSE=None, task='ssRe'):
 	return f
 
 
-def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, ncurves=5, labels=None, x=None):
+def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, ncurves=5, labels=None, x=None, plot_data=False, green=False):
 
-	plt.ion()
+	#plt.ion()
+	pth=utils.find_path()
 
 	sns.set(style='white', font="Helvetica")
 	npoints=len(ysim[0])
@@ -330,9 +338,14 @@ def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, ncurves=5, labels=No
 	xxlim=(-.5, 11)
 	xxlabel='P(Go)'
 
-	if task=='ssRe':
+	emp_bsl=np.array([0.931, 0.744, 0.471, 0.240, 0.034, 0.005], dtype='float')[::-1]
+	emp_pnl=np.array([0.926, 0.767, 0.485, 0.241, 0.036, 0.006], dtype='float')[::-1]
+
+	if 'ssRe' in task:
 		xxlabel='SSD (ms)'
 		xxticklabels=np.arange(200, 500, 50)
+		emp_bsl=np.array([.994, .982, .896, .504, .103], dtype='float')[::-1]
+		emp_pnl=np.array([.993, .985, .925, .594, .181], dtype='float')[::-1]
 		
 	x=res(-x,lower=x[-1]/10, upper=x[0]/10)
 
@@ -342,14 +355,19 @@ def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, ncurves=5, labels=No
 	ax = f.add_subplot(111)
 
 	sns.despine()
+	if plot_data:
+		ie=0
+		ysim.append(emp_bsl)
+		ysim.append(emp_bsl)
+		#ysim.append(emp_pnl)
 
-	colors = sns.blend_palette(["LimeGreen", "Navy"], len(ysim))
-
-	if labels!=None:
-		labels=labels
+	if green:
+		colors = sns.blend_palette(["#00A37A", "#4D94B8"], len(ysim))
+		title="Stop Curves for Nested Model"
 	else:
-		labels=['C'+str(i) for i in range(len(ysim))]
-
+		colors = sns.blend_palette(["#6600CC", "#66CCFF"], len(ysim))
+		title="Stop Curves for Independent Model"
+	ai=0
 	for i, yi in enumerate(ysim):
 
 		y=res(yi, lower=yi[-1], upper=yi[0])
@@ -366,23 +384,32 @@ def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, ncurves=5, labels=No
 		idx = (np.abs(pxp - pstop)).argmin()
 
 		# Plot the results
-		ax.plot(xp, pxp, '-', lw=7.5, color=colors[i], alpha=.6, label=labels[i])
+		if plot_data and (i==len(ysim)-1 or i==len(ysim)-2):
+			ecolors=['Navy', 'Navy']#, '#E60000']; 
+			elabels=['Data (BSL)', '']
+			ax.plot(xp, pxp, '-', lw=8, color=ecolors[ie], alpha=.9)
+			ax.plot(x, y, marker='o', color=ecolors[ie], ms=13, lw=0, alpha=.4, label=elabels[ie])
+			ie+=1
+		else:
+			ax.plot(xp, pxp, '-', lw=5.5, color=colors[i], alpha=.95-ai)
+			ax.plot(x, y, marker='o', color=colors[i], ms=9, lw=0, alpha=.95-ai, label=labels[i])
+			ai+=.05
 
 		pse.append(xp[idx]/scale_factor)
 
 	ax.set_xlim(xxlim)
-	ax.set_xlabel(xxlabel, fontsize=28)
+	ax.set_xlabel(xxlabel, fontsize=22)
 	ax.set_xticks(xxticks)
-	ax.set_xticklabels(xxticklabels, fontsize=20)
+	ax.set_xticklabels(xxticklabels, fontsize=18)
 	ax.set_ylim(0, 1.05)	
 
-	plt.setp(ax.get_yticklabels(), fontsize=20)	
-	ax.set_ylabel('P(Inhibit)', fontsize=28, labelpad=10) 
-	ax.legend(loc=0, fontsize=20)
-	
-	pse=pse
+	plt.setp(ax.get_yticklabels(), fontsize=18)	
+	ax.set_ylabel('P(Inhibit)', fontsize=22, labelpad=8) 
+	ax.legend(loc=0, fontsize=12)
+	ax.set_title(title, fontsize=22)
+	plt.tight_layout()
+	plt.savefig(pth+"CoAx/SS/"+title+".png", dpi=600)
 
-	return pse
 
 
 def factorial_scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, ncurves=5, labels=None, predict_brain=False):
