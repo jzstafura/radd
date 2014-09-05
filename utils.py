@@ -48,3 +48,12 @@ def sub_dists(data, nbins=18, save=True):
 			f.savefig(pth+"CoAx/SS/HDDM/Proactive/sx_rt_dists/sx"+str(i)+'.png', dpi=600)
 		else:
 			subj_fig.show()
+
+
+def wrapper(func, *args, **kwargs):
+	
+	def wrapped():
+		
+		return func(*args, **kwargs)
+	
+	return wrapped

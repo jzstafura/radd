@@ -135,10 +135,12 @@ def sim_radd(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=F
 	if not integrate:
 		ithalamus='null'
 	
+	filler=[0]
+	
 	if visual:
 		return t, choice, evidence_lists, timestep_lists, ithalamus
 	else:
-		return t, choice
+		return t, choice, [filler, filler], [filler, filler], [filler, filler]
 
 
 def thal(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[12, 12.29], integrate=False, visual=False, depHyper=True, **kwargs):
@@ -208,19 +210,21 @@ def thal(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False
 			choice = 'go'
 			no_choice_yet=False
 	
-	if choice=='go':#np.array(thalamus).max() >= a:
-		paths=[thalamus, [0]]
-		timesteps=[tsteps, [0]]
+	filler=[0]
+	
+	if choice=='go':
+		paths=[thalamus, filler]
+		timesteps=[tsteps, filler]
 	else:
 		choice = 'stop'
 		rt = t
-		paths = [[0], thalamus]
-		timesteps = [[0],tsteps]
+		paths = [filler, thalamus]
+		timesteps = [filler, tsteps]
 
 	if visual:
 		return rt, choice, paths, timesteps, thalamus
 	else:
-		return rt, choice
+		return rt, choice, [filler, filler], [filler, filler], [filler, filler]
 
 
 def simIndependentPools(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[12, 12.29], integrate=False, visual=False, depHyper=True, **kwargs):
