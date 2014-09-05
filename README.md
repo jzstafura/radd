@@ -44,9 +44,8 @@ level of "Go" evidence in order to suppress the evolving motor response.
 
 ## Examples
 
-Below is an example of how to simulate several conditions in a typical proactive stop-signal task.
-Numerous other "pre-release" (and poorly documented) examples are availabe in the form of 
-iPython Notebooks at [RADD IPyNb's](http://nbviewer.ipython.org/github/dunovank/pynb/tree/master/).
+Below is an example of how to fit and simulate a model. Numerous other "pre-release" (and poorly 
+documented) examples are availabe as [IPython Notebooks](http://nbviewer.ipython.org/github/dunovank/pynb/tree/master/SS/).
 
 
 ##### optimize go parameters (via [HDDM](https://github.com/hddm-devs/hddm))
