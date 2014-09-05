@@ -51,7 +51,7 @@ Numerous other "pre-release" (and poorly documented) examples are availabe in th
 iPython Notebooks at [RADD IPyNb's](http://nbviewer.ipython.org/github/dunovank/pynb/tree/master/).
 
 
-#### import libraries & optimize go parameters (using wrapper for [HDDM](https://github.com/hddm-devs/hddm))
+##### |optimize go parameters (using wrapper for [HDDM](https://github.com/hddm-devs/hddm))|
 ```python
 import pandas as pd
 from radd import ss, ft, qsim
@@ -64,7 +64,7 @@ vbias_stats=ft.fit_sxhddm(data, depends_on={'v':'Cond'}, bias=True, informative=
                    task='ssRe', save_str="vBP")
 ```
 
-#### Simulate different strengths of stop signal nested in optimized go parameters
+##### simulate range of stop signal drift-rates nested in optimized go parameters
 ```python
 
 #define range of ss drift rates to simulate
@@ -76,7 +76,7 @@ simdf = qsim.sim_ssv_range(params=vbias_stats, ssvlist=ssvlist, task='ssRe', ntr
     
 ```
 
-## References
+##### References
 
 Hanks, T. D., Mazurek, M. E., Kiani, R., Hopp, E., & Shadlen, M. N. (2011). Elapsed decision time affects the weighting of prior probability in a perceptual decision task. The Journal of Neuroscience, 31(17), 6339-6352.
 
