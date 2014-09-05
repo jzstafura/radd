@@ -157,172 +157,8 @@ def fit_scurves(ysim=None, task='ssRe', showPSE=True, ax=None, labels=None, **kw
 
 	return ax
 
-def go_rt_evs(sim_rt=None, emp_rt=None, emp_err=None, sim_err=None, task='ssRe'):
-	
-	plt.ion()
-	sns.set(style='white', font="Helvetica")
-	sns.set_context('poster')
-	
-	x=np.array([1,2])
-	xsim=np.array([1.1, 1.9])
-	
-	sim_rt=np.array([rt*1000 for rt in sim_rt])
-	emp_rt=np.array([rt*1000 for rt in emp_rt])
-	sim_err=np.array([rt*1000 for rt in sim_err])
-	emp_err=np.array([rt*1000 for rt in emp_err])
 
-	f = plt.figure(figsize=(5.5, 6.5)) 
-	ax = f.add_subplot(111)
-	sns.despine()
-	
-	ax.bar(x, emp_rt, yerr=emp_err, color='#441B5F', align='center', error_kw=dict(elinewidth=3, ecolor='black'), alpha=.8)
-	childrenLS=ax.get_children()
-	barlist=filter(lambda x: isinstance(x, matplotlib.patches.Rectangle), childrenLS)
-	barlist[1].set_color('#195E19')
-	
-	ax.errorbar(xsim, sim_rt, yerr=sim_err, color='k', marker='o', mfc=None, ms=16, lw=3, mew=4, mec='k', ecolor='k', elinewidth=3, capsize=0)
-	ax.plot(xsim[0], sim_rt[0], marker='o', color='#9900FF', ms=15)
-	ax.plot(xsim[1], sim_rt[1], marker='o', color='#339933', ms=15)
-
-	ax.set_xlim(0.5, 2.5)
-	ax.set_xticks(x)
-	
-	if 'Re' in task:
-		ylim=[550, 580]
-		ax.set_xticklabels(['BSL', 'PNL'], fontsize=22)	
-		ax.set_xlabel('Feedback Condition', fontsize=28)
-	else:
-		ylim=[520,550]
-		ax.set_xticklabels(['Low', 'High'], fontsize=22)
-		ax.set_xlabel('Go Probabiltiy', fontsize=28)
-
-	ax.set_ylim(ylim[0], ylim[1])	
-	ax.set_yticks(np.arange(ylim[0], ylim[1]+10, 10))
-	ax.set_yticklabels(np.arange(ylim[0], ylim[1]+10, 10), fontsize=20)
-	ax.set_ylabel('Go RT (ms)', fontsize=28)
-
-	yy, locs = plt.yticks()
-	plt.tight_layout()
-
-	plt.savefig("GoRT_%s%s" % (task, ".png"), format='png', dpi=300)
-	plt.savefig("GoRT_%s%s" % (task, ".svg"), rasterized=True, dpi=300)
-
-
-def plot_goRTs(sim_rt=None, task='ssRe'):
-	
-	plt.ion()
-	sns.set(style='white', font="Helvetica")
-	
-	x=np.array([1,2])
-	
-	if task=='ssRe':
-		emp_rt = np.array([565.625, 573.415])	
-		emp_err = np.array([2.9, 2.4])
-		ylim=[550, 580]
-		inc=10
-	elif task=='ssPro':
-		emp_rt = np.array([539.154, 539.344])
-		emp_err = np.array([1.0, 1.0])
-		ylim=[530, 545]
-		inc=5
-	if sim_rt is None:
-		sim_rt = emp_rt
-	
-	if sim_rt[0]<1:
-		sim_rt=np.array([rt*1000 for rt in sim_rt])
-
-	f = plt.figure(figsize=(5.5, 6.5)) 
-	f.subplots_adjust(top=0.95, wspace=0.12, left=0.23, right=0.97, bottom=0.10)
-	ax = f.add_subplot(111)
-	sns.despine()
-	
-	ax.bar(x, emp_rt, yerr=emp_err, align='center', color='MediumBlue', error_kw=dict(elinewidth=3, ecolor='black'), alpha=.6)
-	childrenLS=ax.get_children()
-	barlist=filter(lambda x: isinstance(x, matplotlib.patches.Rectangle), childrenLS)
-	barlist[1].set_color('#E60000')
-	
-	ax.plot(x[0], sim_rt[0], color='#1975FF', marker='o', ms=22, lw=0, alpha=.85, mew=2, mec='Navy')
-	#ax.plot(x[1], sim_rt[1], color='#FF4D94', marker='o', ms=16, lw=0, alpha=.85)
-	ax.plot(x[1], sim_rt[1], color='#E6005C', marker='o', ms=22, lw=0, alpha=.85, mew=2, mec='FireBrick')
-	ax.set_ylim(ylim[0], ylim[1])	
-	ax.set_yticks(np.arange(ylim[0], ylim[1]+inc, inc))
-	ax.set_yticklabels(np.arange(ylim[0], ylim[1]+inc, inc), fontsize=24)
-	ax.set_ylabel('Go RT (ms)', fontsize=30)
-	
-	ax.set_xlim(0.5, 2.5)
-	ax.set_xticks(x)
-	ax.set_xticklabels(['BSL', 'PNL'], fontsize=28)
-
-	yy, locs = plt.yticks()
-	ll = ['%.3f' % a for a in yy]
-	plt.yticks(yy, ll)
-
-	plt.savefig("GoRT_%s%s" % (task, ".png"), format='png', dpi=600)
-	plt.savefig("GoRT_%s%s" % (task, ".svg"), rasterized=True, dpi=600)
-
-def makePivot(df, cols='ssd', index=None, rows=None, values='stop_acc', func=np.average):
-
-	pvot=pd.pivot_table(df, index=index, rows=rows, columns=cols, values=values, aggfunc=func)
-
-	return pvot
-
-def plotPSE(ssPSE=None, task='ssRe'):
-	
-	plt.ion()
-	sns.set(style='white', font="Helvetica")
-	
-
-	if task=='ssRe':
-		emp_pse = np.array([[.3491222879, .3614880328],[.3491222879, .3614880328]])	
-		emp_err = np.array([0.002834, 0.0027982])
-	else:
-		emp_pse=np.array([0.380, 0.387])
-		emp_err=np.array([0.009, 0.009])
-
-	if ssPSE is None:
-		ssPSE = emp_pse
-		
-	f = plt.figure(figsize=(5.5, 6.5)) 
-	f.subplots_adjust(top=0.95, wspace=0.12, left=0.23, right=0.97, bottom=0.10)
-	ax = f.add_subplot(111)
-	sns.despine()
-	
-	x=np.array([1,2])
-	ax.bar(x, np.array(ssPSE[0]), align='center', color='MediumBlue', yerr=emp_err, error_kw=dict(elinewidth=3, ecolor='black'), alpha=.6)
-	childrenLS=ax.get_children()
-	barlist=filter(lambda x: isinstance(x, matplotlib.patches.Rectangle), childrenLS)
-	barlist[1].set_color('#E60000')
-	
-	#ax.plot(x, np.array(ssPSE[1]), color='k', marker='o', ms=10, lw=0)'#1975FF', '#E6005C'
-	ax.plot(x[0], np.array(ssPSE[1])[0], color='#1975FF', marker='o', ms=22, lw=0, alpha=.85, mew=2, mec='Navy')
-	#ax.plot(x[1], np.array(ssPSE[1])[1], color='#FF4D94', marker='o', ms=16, lw=0, alpha=.85)
-	ax.plot(x[1], np.array(ssPSE[1])[1], color='#E6005C', marker='o', ms=22, lw=0, alpha=.85, mew=2, mec='FireBrick')
-	ax.set_xticks(x)
-	ax.set_xticklabels(['BSL', 'PNL'], fontsize=28)
-	ax.set_xlim(0.5, 2.5)
-	
-	if task=='ssRe':
-		ax.set_ylim(.335, .365)
-		ax.set_yticks(np.arange(.335, .375, .01))
-		ax.set_yticklabels(np.arange(.335, .375, .01), fontsize=24)
-	else:
-		ax.set_ylim(.34, .42)
-		ax.set_yticks(np.arange(.34, .44, .02))
-		ax.set_yticklabels(np.arange(.34, .44, .02), fontsize=24)
-	
-	ax.set_ylabel('PSE', fontsize=30)
-
-	yy, locs = plt.yticks()
-	ll = ['%.2f' % a for a in yy]
-	plt.yticks(yy, ll)
-
-	plt.savefig("pse_%s%s" % (task, ".png"), format='png', dpi=600)
-	plt.savefig("pse_%s%s" % (task, ".svg"), rasterized=True, dpi=600)
-	
-	return f
-
-
-def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, ncurves=5, labels=None, x=None, plot_data=False, green=False):
+def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, labels=None, plot_data=False):
 
 	#plt.ion()
 	pth=utils.find_path()
@@ -358,15 +194,14 @@ def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, ncurves=5, labels=No
 	if plot_data:
 		ie=0
 		ysim.append(emp_bsl)
-		ysim.append(emp_bsl)
-		#ysim.append(emp_pnl)
-
-	if green:
-		colors = sns.blend_palette(["#00A37A", "#4D94B8"], len(ysim))
-		title="Stop Curves for Nested Model"
-	else:
-		colors = sns.blend_palette(["#6600CC", "#66CCFF"], len(ysim))
-		title="Stop Curves for Independent Model"
+		ysim.append(emp_pnl)
+	
+	colors = sns.blend_palette(["#00A37A", "#4D94B8"], len(ysim))
+	title="Stop Curves for Nested Model"
+	
+	#colors = sns.blend_palette(["#6600CC", "#66CCFF"], len(ysim))
+	#title="Stop Curves for Independent Model"
+	
 	ai=0
 	for i, yi in enumerate(ysim):
 
@@ -385,15 +220,15 @@ def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, ncurves=5, labels=No
 
 		# Plot the results
 		if plot_data and (i==len(ysim)-1 or i==len(ysim)-2):
-			ecolors=['Navy', 'Navy']#, '#E60000']; 
-			elabels=['Data (BSL)', '']
+			ecolors=['Navy', 'FireBrick']#, '#E60000']; 
+			elabels=['Data (BSL)', 'Data (PNL)']
 			ax.plot(xp, pxp, '-', lw=8, color=ecolors[ie], alpha=.9)
 			ax.plot(x, y, marker='o', color=ecolors[ie], ms=13, lw=0, alpha=.4, label=elabels[ie])
 			ie+=1
 		else:
 			ax.plot(xp, pxp, '-', lw=5.5, color=colors[i], alpha=.95-ai)
 			ax.plot(x, y, marker='o', color=colors[i], ms=9, lw=0, alpha=.95-ai, label=labels[i])
-			ai+=.05
+			ai+=.02
 
 		pse.append(xp[idx]/scale_factor)
 
@@ -614,13 +449,173 @@ def basic_curves(ysim=None, task='ssRe', showPSE=True, ax=None, labels=None, pst
 
 	return ax
 
+
+def go_rt_evs(sim_rt=None, emp_rt=None, emp_err=None, sim_err=None, task='ssRe'):
+	
+	plt.ion()
+	sns.set(style='white', font="Helvetica")
+	sns.set_context('poster')
+	
+	x=np.array([1,2])
+	xsim=np.array([1.1, 1.9])
+	
+	sim_rt=np.array([rt*1000 for rt in sim_rt])
+	emp_rt=np.array([rt*1000 for rt in emp_rt])
+	sim_err=np.array([rt*1000 for rt in sim_err])
+	emp_err=np.array([rt*1000 for rt in emp_err])
+
+	f = plt.figure(figsize=(5.5, 6.5)) 
+	ax = f.add_subplot(111)
+	sns.despine()
+	
+	ax.bar(x, emp_rt, yerr=emp_err, color='#441B5F', align='center', error_kw=dict(elinewidth=3, ecolor='black'), alpha=.8)
+	childrenLS=ax.get_children()
+	barlist=filter(lambda x: isinstance(x, matplotlib.patches.Rectangle), childrenLS)
+	barlist[1].set_color('#195E19')
+	
+	ax.errorbar(xsim, sim_rt, yerr=sim_err, color='k', marker='o', mfc=None, ms=16, lw=3, mew=4, mec='k', ecolor='k', elinewidth=3, capsize=0)
+	ax.plot(xsim[0], sim_rt[0], marker='o', color='#9900FF', ms=15)
+	ax.plot(xsim[1], sim_rt[1], marker='o', color='#339933', ms=15)
+
+	ax.set_xlim(0.5, 2.5)
+	ax.set_xticks(x)
+	
+	if 'Re' in task:
+		ylim=[550, 580]
+		ax.set_xticklabels(['BSL', 'PNL'], fontsize=22)	
+		ax.set_xlabel('Feedback Condition', fontsize=28)
+	else:
+		ylim=[520,550]
+		ax.set_xticklabels(['Low', 'High'], fontsize=22)
+		ax.set_xlabel('Go Probabiltiy', fontsize=28)
+
+	ax.set_ylim(ylim[0], ylim[1])	
+	ax.set_yticks(np.arange(ylim[0], ylim[1]+10, 10))
+	ax.set_yticklabels(np.arange(ylim[0], ylim[1]+10, 10), fontsize=20)
+	ax.set_ylabel('Go RT (ms)', fontsize=28)
+
+	yy, locs = plt.yticks()
+	plt.tight_layout()
+
+	plt.savefig("GoRT_%s%s" % (task, ".png"), format='png', dpi=300)
+	plt.savefig("GoRT_%s%s" % (task, ".svg"), rasterized=True, dpi=300)
+
+
+def plot_goRTs(sim_rt=None, task='ssRe'):
+	
+	plt.ion()
+	sns.set(style='white', font="Helvetica")
+	
+	x=np.array([1,2])
+	
+	if task=='ssRe':
+		emp_rt = np.array([565.625, 573.415])	
+		emp_err = np.array([2.9, 2.4])
+		ylim=[550, 580]
+		inc=10
+	elif task=='ssPro':
+		emp_rt = np.array([539.154, 539.344])
+		emp_err = np.array([1.0, 1.0])
+		ylim=[530, 545]
+		inc=5
+	if sim_rt is None:
+		sim_rt = emp_rt
+	
+	if sim_rt[0]<1:
+		sim_rt=np.array([rt*1000 for rt in sim_rt])
+
+	f = plt.figure(figsize=(5.5, 6.5)) 
+	f.subplots_adjust(top=0.95, wspace=0.12, left=0.23, right=0.97, bottom=0.10)
+	ax = f.add_subplot(111)
+	sns.despine()
+	
+	ax.bar(x, emp_rt, yerr=emp_err, align='center', color='MediumBlue', error_kw=dict(elinewidth=3, ecolor='black'), alpha=.6)
+	childrenLS=ax.get_children()
+	barlist=filter(lambda x: isinstance(x, matplotlib.patches.Rectangle), childrenLS)
+	barlist[1].set_color('#E60000')
+	
+	ax.plot(x[0], sim_rt[0], color='#1975FF', marker='o', ms=22, lw=0, alpha=.85, mew=2, mec='Navy')
+	#ax.plot(x[1], sim_rt[1], color='#FF4D94', marker='o', ms=16, lw=0, alpha=.85)
+	ax.plot(x[1], sim_rt[1], color='#E6005C', marker='o', ms=22, lw=0, alpha=.85, mew=2, mec='FireBrick')
+	ax.set_ylim(ylim[0], ylim[1])	
+	ax.set_yticks(np.arange(ylim[0], ylim[1]+inc, inc))
+	ax.set_yticklabels(np.arange(ylim[0], ylim[1]+inc, inc), fontsize=24)
+	ax.set_ylabel('Go RT (ms)', fontsize=30)
+	
+	ax.set_xlim(0.5, 2.5)
+	ax.set_xticks(x)
+	ax.set_xticklabels(['BSL', 'PNL'], fontsize=28)
+
+	yy, locs = plt.yticks()
+	ll = ['%.3f' % a for a in yy]
+	plt.yticks(yy, ll)
+
+	plt.savefig("GoRT_%s%s" % (task, ".png"), format='png', dpi=600)
+	plt.savefig("GoRT_%s%s" % (task, ".svg"), rasterized=True, dpi=600)
+
+
+def plotPSE(ssPSE=None, task='ssRe'):
+	
+	plt.ion()
+	sns.set(style='white', font="Helvetica")
+	
+
+	if task=='ssRe':
+		emp_pse = np.array([[.3491222879, .3614880328],[.3491222879, .3614880328]])	
+		emp_err = np.array([0.002834, 0.0027982])
+	else:
+		emp_pse=np.array([0.380, 0.387])
+		emp_err=np.array([0.009, 0.009])
+
+	if ssPSE is None:
+		ssPSE = emp_pse
+		
+	f = plt.figure(figsize=(5.5, 6.5)) 
+	f.subplots_adjust(top=0.95, wspace=0.12, left=0.23, right=0.97, bottom=0.10)
+	ax = f.add_subplot(111)
+	sns.despine()
+	
+	x=np.array([1,2])
+	ax.bar(x, np.array(ssPSE[0]), align='center', color='MediumBlue', yerr=emp_err, error_kw=dict(elinewidth=3, ecolor='black'), alpha=.6)
+	childrenLS=ax.get_children()
+	barlist=filter(lambda x: isinstance(x, matplotlib.patches.Rectangle), childrenLS)
+	barlist[1].set_color('#E60000')
+	
+	#ax.plot(x, np.array(ssPSE[1]), color='k', marker='o', ms=10, lw=0)'#1975FF', '#E6005C'
+	ax.plot(x[0], np.array(ssPSE[1])[0], color='#1975FF', marker='o', ms=22, lw=0, alpha=.85, mew=2, mec='Navy')
+	#ax.plot(x[1], np.array(ssPSE[1])[1], color='#FF4D94', marker='o', ms=16, lw=0, alpha=.85)
+	ax.plot(x[1], np.array(ssPSE[1])[1], color='#E6005C', marker='o', ms=22, lw=0, alpha=.85, mew=2, mec='FireBrick')
+	ax.set_xticks(x)
+	ax.set_xticklabels(['BSL', 'PNL'], fontsize=28)
+	ax.set_xlim(0.5, 2.5)
+	
+	if task=='ssRe':
+		ax.set_ylim(.335, .365)
+		ax.set_yticks(np.arange(.335, .375, .01))
+		ax.set_yticklabels(np.arange(.335, .375, .01), fontsize=24)
+	else:
+		ax.set_ylim(.34, .42)
+		ax.set_yticks(np.arange(.34, .44, .02))
+		ax.set_yticklabels(np.arange(.34, .44, .02), fontsize=24)
+	
+	ax.set_ylabel('PSE', fontsize=30)
+
+	yy, locs = plt.yticks()
+	ll = ['%.2f' % a for a in yy]
+	plt.yticks(yy, ll)
+
+	plt.savefig("pse_%s%s" % (task, ".png"), format='png', dpi=600)
+	plt.savefig("pse_%s%s" % (task, ".svg"), rasterized=True, dpi=600)
+	
+	return f
+
+
 def predict_neural_integrator(m={}, arr=np.arange(0, 1, .1), task='ssReBSL', plot=True):
 
 	cd=dict()
 	
 	pglist=[0, .2, .4, .6, .8, 1]
 	vlist=[0.073, 0.26, 0.4385, 0.601, 0.93, 1.09]
-	#ssdlist=[.2, .25, .3, .35, .4]
 	ssdlist=[.4, .35, .3, .25, .20]
 	simlist=[]
 
@@ -628,20 +623,15 @@ def predict_neural_integrator(m={}, arr=np.arange(0, 1, .1), task='ssReBSL', plo
 
 		for ssd in ssdlist:
 			
-			#m['sp']['ssd']=ssd
 			sp={'mu_ss':m['sp']['mu_ss'], 'pGo':.5, 'ssd':ssd, 'ssTer':m['sp']['ssTer'], 'ssTer_var':m['sp']['ssTer_var']}
 			gp={'a':m['gp']['a'], 'z':m['gp']['z'], 'v':m['gp']['v'], 'Ter':m['gp']['Ter'], 'st':m['gp']['st'], 'sz':m['gp']['sz'], 
 				'eta':m['gp']['eta'], 's2':m['gp']['s2']}
-			#sim_data=ss.set_model(gParams=m['gp'], sParams=m['sp'], ntrials=m['ntrials'], 
-			#	timebound=m['timebound'], predictBOLD=False, task=task)
 
 			sim_data=ss.set_model(gParams=gp, sParams=sp, ntrials=m['ntrials'], 
 				timebound=m['timebound'], predictBOLD=False, task=task)
 			
 			simlist.append(sim_data[2])
 
-		print simlist
-	
 	elif 'Pro' in task:
 		
 		for i, pg in enumerate(pglist):
@@ -653,54 +643,9 @@ def predict_neural_integrator(m={}, arr=np.arange(0, 1, .1), task='ssReBSL', plo
 				timebound=m['timebound'], predictBOLD=False, task=task)
 			simlist.append(simdata[1])
 	
-	#if task=='ssReBSL':
-	#	xp, pxp=scurves(ysim=np.array(simlist, dtype='float')[::-1], task=task, predict_brain=True)
-		#return pxp, xp
-	#elif task=='ssProBSL':
-	#	xp, pxp=scurves(ysim=np.array(simlist, dtype='float')[::-1], task=task, predict_brain=True)
-	
-	#idxlist=[]
-	
 	for i in arr:
 		
-	
 		x_at_p=scurves(ysim=np.array(simlist, dtype='float')[::-1], task=task, pstop=i, predict_brain=True)
-		print x_at_p
-		#return x_at_p
-		#idx = (pxp-np.abs(arr[i])).argmin()
-		#print np.abs(i)
-		#idx = (pxp - np.abs(i)).argmin()
-		#print xp[idx]
-		#point=xp[idx]/10
-		#point=xp[idx]/100
-		#print point
-
-		#idxlist.append(point)
-		#if i==arr[-1]: 
-
-		#	return idxlist
-		
-	#	if 'R' in task:
-	#		m['sp']['pGo']=.5
-	#		m['sp']['ssd'] =  x_at_p #point #idx
-	#	elif 'P' in task:
-	#		m['sp']['pGo'] = x_at_p #idx
-	#		m['sp']['ssd']=.450
-	#
-	#	df_out = ss.set_model(gParams=m['gp'], sParams=m['sp'], ntrials=m['ntrials'],
- 	#		timebound=m['timebound'], predictBOLD=True, task=task)
-	#
-	#	#print df_out.columns
-	#
-	#	print df_out.keys()
-	#
-	#	cd[str(i)]=integrate_all_signals(df=df_out)
-	#
-	#if plot:
-	#	#x, y=plot_integrator_magnitude(cd=cd)
-	#	plot_integrator_magnitude(cd=cd)
-	#	return x, y
-
 
 def integrate_all_signals(df):
 
@@ -739,15 +684,7 @@ def plot_integrator_magnitude(cd):
 		for tdv in cd[k].values():
 			ylist.append(tdv)
 		
-		#return xlist, ylist
-
-		#xlist=[tdkeys for td in cd[k].keys() for tdkeys in cd[td].keys()]
-
-		#ylist=[tdvals for td in cd[k][td].values]
-		
 		sns.barplot(x=np.array(xlist), y=np.array(ylist), ci=None, palette="BuGn_d", ax=ax)
-
-	#return cd
 
 
 

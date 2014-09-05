@@ -2,7 +2,7 @@
 
 ## Summary
 
-RADD is a python module for modeling the underlying dynamics of motor inhibition
+RADD is a python package for modeling the underlying dynamics of motor inhibition
 as a combination of two widely utilized conceptual frameworks: race models of response inhibtion
 and drift-diffusion models of decision-making.
 
@@ -21,14 +21,14 @@ level of "Go" evidence in order to suppress the evolving motor response.
 
 * Includes models of proactive and reactive stopping.
 
-* Flexible control over numerous parameters including all standard and inter-trial
-  variability parameters of the full drift-diffusion model and additional stop-signal
-  parameters.
+* Flexible control over parameter dependencies.
 
-* Optional temporally dependent dynamic bias signal (see [Hanks et al., 2011](http://www.jneurosci.org/content/31/17/6339.full.pdf))
+* Optimize "Go" parameters using wrapper for [HDDM](https://github.com/hddm-devs/hddm) (Wiecki, Sofer, & Frank, 2014)
 
-* Quality visualizations for assessing response time distributions of Go and Stop processes,
-  comparing empirical and simulated data, etc.
+* Include dynamic bias signal (see [Hanks et al., 2011](http://www.jneurosci.org/content/31/17/6339.full.pdf))
+
+* Visualizations for assessing go and stop RT distributions,
+  comparing alternative model fits, overlaying simulated data on empirical means, etc.
 
 * Simulate neural integration of direct, indirect, and hyperdirect pathways in the 
   Basal Ganglia - useful for generating and testing predictions about fMRI and 
@@ -36,19 +36,9 @@ level of "Go" evidence in order to suppress the evolving motor response.
 
 
 
-## Future Development
+## Future Development Goals
 
-* Currently RADD is in *very early* stages of development and requires the user to define values
-  for model parameters (undefined parameters assume default values which can be found in 
-  [Matzke & Wagenmakers, 2009](http://www.ejwagenmakers.com/2009/MatzkeWagenmakers2009.pdf)).
-  However, future releases will include parameter fitting routines.
-
-* We are currently in the process of implementing RADD as a neural network model of the BG.
-  Ultimately, we aim to merge the two models into a single package for simulating sensorimotor 
-  inhibition and decision making across multiple levels, from descriptive cognitive processes 
-  to their neurobiological implementation.
-
-* Other goals: easy package management and installation (i.e. via pip or conda), proper 
+* easy package management and installation (i.e. via pip or conda), proper 
   documentation and tutorials, goodness of fit statistics and additional model comparison
   methods, +
 
@@ -61,28 +51,35 @@ Numerous other "pre-release" (and poorly documented) examples are availabe in th
 iPython Notebooks at [RADD IPyNb's](http://nbviewer.ipython.org/github/dunovank/pynb/tree/master/).
 
 
-#### import libraries & define global parameters
+#### import libraries & optimize go parameters (using wrapper for [HDDM](https://github.com/hddm-devs/hddm))
 ```python
-from radd import ss, psy, simfx
+import pandas as pd
+from radd import ss, ft, qsim
 
-a=.37; z=.5*a; Ter=.347; eta=.14; st=.0001; sz=.0001; s2=.01; xpo=[12, 12.29]; pSSD=.450;
-mu_ss=-2.17; ssTer=.099; ssRe_TB=.653; ssPro_TB=.6; nt=1000; sTB=.00001; ssTer_var=.0001
+#load go trials into a pandas df
+data=pd.read_csv(SS_AllSx_Data.csv")
+
+#estimate individual subject parameters for go trials
+vbias_stats=ft.fit_sxhddm(data, depends_on={'v':'Cond'}, bias=True, informative=True, include=['a', 't', 'v', 'z', 'sv'], 
+                   task='ssRe', save_str="vBP")
 ```
 
-#### simulate behavior under different probabilities of "Go" as a change in the drift-rate
+#### Simulate different strengths of stop signal nested in optimized go parameters
 ```python
-out=[]
 
-pGo=[.2, .4, .6, .8]
-vlist=[0.20, 0.45, 0.60, 0.95]
+#define range of ss drift rates to simulate
+ssvlist = -1*np.arange(.5, .9,.05)
+sim_list=[]
 
-for i, v in enumerate(vlist):
+#simulate (returns df of simulated trial data)
+simdf = qsim.sim_ssv_range(params=vbias_stats, ssvlist=ssvlist, task='ssRe', ntrials=500)
     
-    gp={'a':a, 'z':z, 'v':v, 'Ter':Ter, 'eta':eta, 'st':st, 'sz':sz, 's2':s2}
-    sp={'mu_ss':mu_ss, 'pGo':pGo[i], 'ssd':pSSD, 'ssTer':ssTer, 'ssTer_var':ssTer_var}
-    
-    sim_data=ss.set_model(gParams=gp, sParams=sp, ntrials=nt, timebound=ssPro_TB, 
-    	t_exp=True, exp_scale=xpo, visual=False, task='ssProBSL')
-    
-    out.append(sim_data)
 ```
+
+## References
+
+Hanks, T. D., Mazurek, M. E., Kiani, R., Hopp, E., & Shadlen, M. N. (2011). Elapsed decision time affects the weighting of prior probability in a perceptual decision task. The Journal of Neuroscience, 31(17), 6339-6352.
+
+Matzke, D., & Wagenmakers, E. J. (2009). Psychological interpretation of the ex-Gaussian and shifted Wald parameters: A diffusion model analysis. Psychonomic Bulletin & Review, 16(5), 798-817.
+
+Wiecki TV, Sofer I and Frank MJ (2013). HDDM: Hierarchical Bayesian estimation of the Drift-Diffusion Model in Python. Front. Neuroinform. 7:14. 

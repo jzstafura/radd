@@ -211,7 +211,6 @@ def anl(df):
 	pstop=len(df.ix[(df['choice']=='stop')])/len(df)
 	stop_acc=df.ix[(df['trial_type']=='stop'), 'acc'].mean()
 	
-	#return pd.DataFrame({'go_rt_cor':go_rt_cor, 'go_rt_all':go_rt_all, 'go_rt_err':go_rt_err, 'pstop':pstop, 'stop_acc':stop_acc})
 	return pd.Series({'go_rt_cor':go_rt_cor, 'go_rt_all':go_rt_all, 'go_rt_err':go_rt_err, 'pstop':pstop, 'stop_acc':stop_acc})
 
 def plot_decisions(df, pGo=0.5, ssd=.300, timebound=0.653, task='ssPro', t_exp=False, exp_scale=[10,10], animate=False, normp=False):

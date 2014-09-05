@@ -17,6 +17,15 @@ def find_path():
 	return pth
 
 
+
+def makePivot(df, cols='ssd', index=None, rows=None, values='stop_acc', func=np.average):
+
+	pvot=pd.pivot_table(df, index=index, rows=rows, columns=cols, values=values, aggfunc=func)
+
+	return pvot
+
+
+
 def sub_dists(data, nbins=18, save=True):
 
 	pth=find_path()
