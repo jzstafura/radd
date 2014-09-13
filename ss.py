@@ -12,8 +12,8 @@ import utils
 
 sns.set(font="Helvetica")
 
-def set_model(gParams=None, sParams=None, mfx=sim_radd, ntrials=100, timebound=0.653, s2=.01, task='ssRe', visual=False,
-	exp_scale=[12, 12.29], depHyper=True, predictBOLD=False, save=False, return_all=False, return_all_beh=False, condition_str=None):
+def set_model(gParams=None, sParams=None, mfx=sim_radd, ntrials=100, timebound=0.653, task='ssRe', visual=False,
+	exp_scale=[12, 12.29], depHyper=True, save=False, return_all=False, return_all_beh=False, condition_str=None):
 
 	"""
 	set_model: instantiates ddm parameters and call simulation method (mfx)
@@ -33,7 +33,7 @@ def set_model(gParams=None, sParams=None, mfx=sim_radd, ntrials=100, timebound=0
 		gp=gParams
 		sp=sParams
 
-	stb=.0001; pStop=1-sp['pGo']
+	pStop=1-sp['pGo']
 	gp, sp = get_intervar_ranges(parameters={'gp':gp, 'sp':sp})
 	columns=["rt","choice","acc","go_tsteps", "go_paths","ss_tsteps","thalamus",
 		"ss_paths","tparams","len_go_tsteps","len_ss_tsteps","trial_type"]
@@ -47,9 +47,9 @@ def set_model(gParams=None, sParams=None, mfx=sim_radd, ntrials=100, timebound=0
 			ss_bool=True
 			trial_type='stop'
 
-		gp, sp, tb = update_params(gp, sp, timebound, stb)
+		gp, sp, tb = update_params(gp, sp, timebound)
 		
-		rt, choice, paths, tsteps, ithalamus = mfx(gp['mu'], s2, gp['TR'],gp['a'],gp['ZZ'], mu_ss=sp['mu_ss'], ssd=sp['ss_On'], depHyper=depHyper, timebound=tb, exp_scale=exp_scale, ss_trial=ss_bool, integrate=predictBOLD, visual=visual)	
+		rt, choice, paths, tsteps, ithalamus = mfx(gp['mu'], gp['TR'], gp['a'], gp['ZZ'], mu_ss=sp['mu_ss'], ssd=sp['ss_On'], depHyper=depHyper, timebound=tb, exp_scale=exp_scale, ss_trial=ss_bool)	
 		
 		if choice==trial_type: 
 			acc=1
@@ -69,17 +69,6 @@ def set_model(gParams=None, sParams=None, mfx=sim_radd, ntrials=100, timebound=0
 	if visual:
 		
 		f=plot_decisions(df=df, pGo=sp['pGo'], ssd=sp['ssd'], timebound=timebound, exp_scale=exp_scale, task=task[:4], normp=False)
-		
-		if save:
-			pth=utils.find_path()
-			if 'Re' in task:
-				savestr="%s_SSD%sms" % (task, str(int(sp['ssd']*1000)))
-			else:
-				savestr="%s_PGo%s" % (task, str(int(sp['pGo']*100)))
-			f.savefig(pth+"CoAx/SS/"+savestr+".png", format='png', dpi=600)
-
-	if save:
-		savefx(df_beh)
 	if return_all:
 		return df
 	if return_all_beh:
@@ -223,12 +212,12 @@ def plot_decisions(df, pGo=0.5, ssd=.300, timebound=0.653, task='ssRe', t_exp=Fa
 
 	return f
 
-def update_params(gp, sp, timebound, stb):
+def update_params(gp, sp, timebound):
 	
 	gp['TR'] = gp['Ter_lo'] + np.random.uniform() * (gp['Ter_hi'] - gp['Ter_lo'])
 	gp['ZZ'] = gp['z_lo'] + np.random.uniform() * (gp['z_hi'] - gp['z_lo'])
 	gp['mu'] = gp['eta'] * np.random.randn() + gp['v']
-	tb = stb * np.random.randn() + timebound
+	tb = .001 * np.random.randn() + timebound
 	sp['ss_On'] = sp['ssd'] + (sp['ssTer_lo'] + np.random.uniform() * (sp['ssTer_hi'] - sp['ssTer_lo']))
 
 	return gp, sp, tb

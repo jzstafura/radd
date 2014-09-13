@@ -23,7 +23,7 @@ import os
 #vlist_pnl=[0.05, 0.23, 0.425, 0.601, 0.93, 1.09
 
 def simConditions(gp, sp, vlist, pGo_list=[0, .2, .4, .6, .8, 1], ssdlist=[.450], mfx=simfx.sim_radd, depHyper=True, 
-	ntrials=1500, return_all=False, return_all_beh=False, tb=.560, task='ssProBSL', visual=False, conditions=[]):
+	ntrials=1500, return_all=False, return_all_beh=False, tb=.560, task='ssProBSL', visual=False, conditions=[], integrate=False):
 
 	simdf_list=[]
 	
@@ -72,7 +72,7 @@ def get_params(task='ssRe'):
 	a=p['a']*.1; 
 	z=p['z']*a; 
 	gp={'a':a, 'z':z, 'Ter':p['t'], 'eta':p['sv'], 'st':0.000001, 'sz':0.000001}
-	sp={'ssTer':0.0, 'ssTer_var':0.0}
+	sp={'ssTer':0.3, 'ssTer_var':0.0}
 
 	return gp, sp, vlist, pGo_list, ssdlist, conditions, tb
 
@@ -84,8 +84,7 @@ def sim_ssv_range(ssvlist=-np.arange(.5, 2.5, .5), task='ssRe', mfx=simfx.thal, 
 	for ssv in ssvlist:
 		
 		sp['mu_ss']=ssv
-		simdf=simConditions(gp, sp, vlist, pGo_list=pGo_list, ssdlist=ssdlist, mfx=mfx, ntrials=ntrials, depHyper=depHyper, tb=tb, 
-			task='ssRe', conditions=conditions, return_all_beh=True, visual=visual)
+		simdf=simConditions(gp, sp, vlist, pGo_list=pGo_list, ssdlist=ssdlist, mfx=mfx, ntrials=ntrials, depHyper=depHyper, tb=tb, task='ssRe', conditions=conditions, return_all_beh=True, visual=visual)
 					
 		simdf['ssv']=[ssv]*len(simdf)
 		sims.append(simdf)

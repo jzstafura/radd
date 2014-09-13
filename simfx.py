@@ -5,7 +5,7 @@ import numpy as np
 import time
 from scipy import stats
 
-def sim_radd(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10], integrate=False, visual=False, depHyper=True, **kwargs):
+def sim_radd(mu, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10], depHyper=True, s2=.01, **kwargs):
 
 	"""
 
@@ -33,39 +33,28 @@ def sim_radd(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=F
 	else:		# or
 		t=TR	 # start the time at TR
 	
-	tb=0				# init the exp time bias to 0
 	choice=None			# init choice as NoneType
  	tau=.0001			# time per step of the diffusions
-	dx=np.sqrt(s2*tau)  # dx is the step size up or down.
+	dx=np.sqrt(s2*tau)  		# dx is the step size up or down.
 	e=z		     		# starting point
 	e_ss=z				#arbitrary (positive) init value
 	ss_started=False
-	elist=[]; tlist=[]; elist_ss=[]; tlist_ss=[]; ithalamus=[];
-	num=exp_scale[0]
-	denom=exp_scale[1]
-	thalamus=z
-	ss_ti=0
-	
-	# loop until evidence is greater than or equal to a (upper boundary)
-	# or evidence is less than or equal to 0 (lower boundary)
-	while e<a and e>0 and e_ss>0: 
-			
-		if t>=timebound:
-			choice='stop'
-			break
+	elist=[]; tlist=[]; elist_ss=[]; tlist_ss=[]; ithalamus=[0];
+	ss_ti=0; e_ti=0
+	no_choice_yet=True
+
+	while t < timebound: 
 		
 		# increment the time
 		t = t + tau
-		
+
+		if t>=timebound and no_choice_yet:
+			choice='stop'
+			rt=timebound
+			no_choice_yet=False
+
 		if t>=TR:
-			
-			#if tb==0:
-				#timebias=0
-			#else:
-			tb = tb + tau
-			timebias=(np.exp(num*tb))/(np.exp(denom))
-		
-			# r is between 0 and 1
+
 			r=np.random.random_sample()
 		
 			# This is the probability of moving up or down from z.
@@ -75,75 +64,62 @@ def sim_radd(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=F
 			
 			# if r < p then move up
 			if r < p:
-				e = e + dx# + timebias	
-				
+				e = e + dx
+				e_ti = dx	
 			# else move down
 			else:
-				e = e - dx# + timebias
+				e = e - dx
+				e_ti = -dx
 			
 			elist.append(e)
 			tlist.append(t)
 			
+			if e>=a and no_choice_yet:
+				choice='go'
+				rt=t
+				mu=0
+				no_choice_yet=False
+
 		if ss_trial and t>=ssd:
 			
 			r_ss=np.random.random_sample()
 			p_ss=0.5*(1 + mu_ss*dx/s2)
 			
 			#test if stop signal has started yet.
-			#if not, then start at current position of "go/nogo" DV: e
+			#if not, then start at current state
+			#of "go/nogo" decision variable
 			if not ss_started and depHyper:
 				ss_started=True
 				e_ss=e
-				
 			else:
-				# if r < p then move up
 				if r_ss < p_ss:
 					e_ss = e_ss + dx
 					ss_ti = dx
-				# else move down
 				else:
 					e_ss = e_ss - dx
 					ss_ti = -dx
-			
+			if e_ss<=0 and no_choice_yet:
+				choice='stop'
+				rt=t
+				mu_ss=0
+				no_choice_yet=False
+
 			elist_ss.append(e_ss)
 			tlist_ss.append(t)
-		
-		if integrate:
 
-			#if e!=z and e_ss!=z:
-			if len(elist)>0 and len(elist_ss)>0:
-				thalamus = e + ss_ti
-
-			elif len(elist)>0 and len(elist_ss)==0:				
-				thalamus = e
-
-			else:
-				thalamus = e_ss
-
-			ithalamus.append(thalamus)
+		ithalamus.append(ithalamus[-1]+e_ti+ss_ti)
 	
-
 	evidence_lists=[elist, elist_ss]
 	timestep_lists=[tlist, tlist_ss]
 	
 	if choice is None:
-		if e >= a:
-			choice = 'go'
-		elif e<=0 or e_ss<=0:
-			choice = 'stop'
-	
-	if not integrate:
-		ithalamus='null'
-	
-	filler=[0]
-	
-	if visual:
-		return t, choice, evidence_lists, timestep_lists, ithalamus
-	else:
-		return t, choice, [filler, filler], [filler, filler], [filler, filler]
+		choice='stop'
+		rt=timebound
+
+	return rt, choice, evidence_lists, timestep_lists, ithalamus
 
 
-def thal(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[12, 12.29], integrate=False, visual=False, depHyper=True, **kwargs):
+def thal(mu, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[12, 12.29], depHyper=True, s2=.01, **kwargs):
 
 	"""
 	args:
@@ -176,22 +152,19 @@ def thal(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False
 	else:		# or
 		t=TR	# start the time at TR
 
-	while t<timebound: #e<a and e>0 and e_ss>0: 
+	while t<timebound: 
 		
 		t = t + tau
 		if t >= TR:
-			
-			#tb = tb + tau
-			#timebias=(np.exp(exp_scale[0]*tb))/(np.exp(exp_scale[1]))
-		
+
 			# r is between 0 and 1
 			r=np.random.random_sample()
 			p=0.5*(1 + mu*dx/s2)
 			
 			if r < p:
-				gti = dx #+ timebias
+				gti = dx 
 			else:
-				gti = -dx #+ timebias	
+				gti = -dx
 
 		if ss_trial and t >= ssd:
 			r_ss=np.random.random_sample()
@@ -209,22 +182,17 @@ def thal(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False
 			rt=t
 			choice = 'go'
 			no_choice_yet=False
-	
-	filler=[0]
-	
+
 	if choice=='go':
-		paths=[thalamus, filler]
-		timesteps=[tsteps, filler]
+		paths=[thalamus, [0]]
+		timesteps=[tsteps, [0]]
 	else:
 		choice = 'stop'
 		rt = t
-		paths = [filler, thalamus]
-		timesteps = [filler, tsteps]
+		paths = [[0], thalamus]
+		timesteps = [[0], tsteps]
 
-	if visual:
-		return rt, choice, paths, timesteps, thalamus
-	else:
-		return rt, choice, [filler, filler], [filler, filler], [filler, filler]
+	return rt, choice, paths, timesteps, thalamus
 
 
 def simIndependentPools(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[12, 12.29], integrate=False, visual=False, depHyper=True, **kwargs):
