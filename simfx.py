@@ -33,6 +33,111 @@ def sim_radd(mu, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False
 	else:		# or
 		t=TR	 # start the time at TR
 	
+ 	tau=.0001			# time per step of the diffusions
+	dx=np.sqrt(s2*tau)  		# dx is the step size up or down.
+	e=z		     		# starting point
+	e_ss=z				#arbitrary (positive) init value
+	ss_started=False
+	elist=[]; tlist=[]; elist_ss=[]; tlist_ss=[]
+	no_choice_yet=True
+
+	while no_choice_yet==True: 
+		
+		# increment the time
+		t = t + tau
+
+		if t>=timebound and no_choice_yet:
+			choice='stop'
+			rt=timebound
+			no_choice_yet=False
+			break
+
+		if t>=TR:
+
+			r=np.random.random_sample()
+		
+			# This is the probability of moving up or down from z.
+			# If mu is greater than 0, the diffusion tends to move up.
+			# If mu is less than 0, the diffusion tends to move down.
+			p=0.5*(1 + mu*dx/s2)
+			
+			# if r < p then move up
+			if r < p:
+				e = e + dx
+			# else move down
+			else:
+				e = e - dx
+			
+			elist.append(e)
+			tlist.append(t)
+			
+			if e>=a and no_choice_yet:
+				choice='go'
+				rt=t
+				mu=0
+				no_choice_yet=False
+
+		if ss_trial and t>=ssd:
+			
+			r_ss=np.random.random_sample()
+			p_ss=0.5*(1 + mu_ss*dx/s2)
+			
+			#test if stop signal has started yet.
+			#if not, then start at current state
+			#of "go/nogo" decision variable
+			if not ss_started and depHyper:
+				ss_started=True
+				e_ss=e
+			else:
+				if r_ss < p_ss:
+					e_ss = e_ss + dx
+
+				else:
+					e_ss = e_ss - dx
+
+			if e_ss<=0 and no_choice_yet:
+				choice='stop'
+				rt=t
+				mu_ss=0
+				no_choice_yet=False
+
+			elist_ss.append(e_ss)
+			tlist_ss.append(t)
+	
+	evidence_lists=[elist, elist_ss]
+	timestep_lists=[tlist, tlist_ss]
+
+	return rt, choice, evidence_lists, timestep_lists, [0]
+
+
+def sim_radd_thal(mu, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10], depHyper=True, s2=.01, **kwargs):
+
+	"""
+
+	Standard radd simulation model, 
+	including exponential temporal bias 
+	and optional BOLD predictions
+
+	args:
+		:: mu = mean drift-rate
+		:: s2 = diffusion coeff
+		:: TR = non-decision time
+		:: a  = boundary height
+		:: z  = starting-point 
+
+	returns:
+	 	rt (float): 	decision time
+		choice (str):	a/b 		
+		elist (list):	list of sequential/cumulative evidence
+		tlist (list):	list of sequential timesteps
+	"""
+	
+	if TR>ssd and ss_trial:
+		t=ssd	# start the time at ssd
+
+	else:		# or
+		t=TR	 # start the time at TR
+	
 	choice=None			# init choice as NoneType
  	tau=.0001			# time per step of the diffusions
 	dx=np.sqrt(s2*tau)  		# dx is the step size up or down.
@@ -43,7 +148,7 @@ def sim_radd(mu, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False
 	ss_ti=0; e_ti=0
 	no_choice_yet=True
 
-	while t < timebound: 
+	while t < timebound or no_choice_yet==False: 
 		
 		# increment the time
 		t = t + tau

@@ -198,7 +198,7 @@ def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, labels=None, plot_da
 	
 	colors = sns.blend_palette(["#00A37A", "#4D94B8"], len(ysim))
 	title="Stop Curves for Nested Model"
-	
+	#colors=sns.blend_palette(["#53FCAL", "#40a368"], len(ysim))
 	#colors = sns.blend_palette(["#6600CC", "#66CCFF"], len(ysim))
 	#title="Stop Curves for Independent Model"
 	
@@ -227,7 +227,7 @@ def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, labels=None, plot_da
 			ie+=1
 		else:
 			ax.plot(xp, pxp, '-', lw=5.5, color=colors[i], alpha=.95-ai)
-			ax.plot(x, y, marker='o', color=colors[i], ms=9, lw=0, alpha=.95-ai, label=labels[i])
+			ax.plot(x, y, marker='o', color=colors[i], ms=9, lw=0, alpha=.95-ai)#, label=labels[i])
 			ai+=.02
 
 		pse.append(xp[idx]/scale_factor)
@@ -366,7 +366,6 @@ def basic_curves(ysim=None, task='ssRe', showPSE=True, ax=None, labels=None, pst
 		x=np.array([100, 80, 60, 40, 20, 0], dtype='float')
 		xsim=np.linspace(-5, 10, 10000)
 		scale_factor=10
-		#x=np.array(np.linspace(10, 100, npoints), dtype='float')
 		xxticks=x/scale_factor
 		xxticklabels=x/100
 		xxlim=(-0.5, 10.5)

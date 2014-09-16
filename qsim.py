@@ -72,7 +72,7 @@ def get_params(task='ssRe'):
 	a=p['a']*.1; 
 	z=p['z']*a; 
 	gp={'a':a, 'z':z, 'Ter':p['t'], 'eta':p['sv'], 'st':0.000001, 'sz':0.000001}
-	sp={'ssTer':0.3, 'ssTer_var':0.0}
+	sp={'ssTer':0.0, 'ssTer_var':0.0}
 
 	return gp, sp, vlist, pGo_list, ssdlist, conditions, tb
 
@@ -81,13 +81,19 @@ def sim_ssv_range(ssvlist=-np.arange(.5, 2.5, .5), task='ssRe', mfx=simfx.thal, 
 	sims=[]
 	gp, sp, vlist, pGo_list, ssdlist, conditions, tb=get_params(task)
 
-	for ssv in ssvlist:
+	p=utils.ProgressBar(len(ssvlist))
+
+	for i, ssv in enumerate(ssvlist):
 		
+		p.animate(i)
+
 		sp['mu_ss']=ssv
 		simdf=simConditions(gp, sp, vlist, pGo_list=pGo_list, ssdlist=ssdlist, mfx=mfx, ntrials=ntrials, depHyper=depHyper, tb=tb, task='ssRe', conditions=conditions, return_all_beh=True, visual=visual)
 					
 		simdf['ssv']=[ssv]*len(simdf)
 		sims.append(simdf)
+
+		#print "Finished %s of %s" % (str(i+1), str(len(ssvlist)))
 
 	allSims=pd.concat(sims)    
 

@@ -52,9 +52,9 @@ def set_model(gParams=None, sParams=None, mfx=sim_radd, ntrials=100, timebound=0
 		rt, choice, paths, tsteps, ithalamus = mfx(gp['mu'], gp['TR'], gp['a'], gp['ZZ'], mu_ss=sp['mu_ss'], ssd=sp['ss_On'], depHyper=depHyper, timebound=tb, exp_scale=exp_scale, ss_trial=ss_bool)	
 		
 		if choice==trial_type: 
-			acc=1
+			acc=1.0
 		else: 
-			acc=0
+			acc=0.0
 		
 		df.loc[i]=pd.Series({"rt":rt,"choice":choice,"acc":acc,"go_tsteps":tsteps[0], "go_paths":paths[0],"ss_tsteps":tsteps[1],"thalamus":ithalamus,"ss_paths":paths[1],"tparams":gp,"len_go_tsteps":len(tsteps[0]),"len_ss_tsteps":len(tsteps[1]),"trial_type":trial_type})
 		
@@ -71,7 +71,7 @@ def set_model(gParams=None, sParams=None, mfx=sim_radd, ntrials=100, timebound=0
 		f=plot_decisions(df=df, pGo=sp['pGo'], ssd=sp['ssd'], timebound=timebound, exp_scale=exp_scale, task=task[:4], normp=False)
 	if return_all:
 		return df
-	if return_all_beh:
+	elif return_all_beh:
 		return df_beh
 	else:
 		sim_data=anl(df_beh)
