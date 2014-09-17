@@ -322,7 +322,7 @@ def factorial_scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, ncurves=5,
 	pbsl=np.array([0.92266667,  0.745, 0.46633333, 0.231, 0.015, 0.00233333], dtype='float')#[::-1]#, 0.00233333], dtype='float')[::-1]
 	#ppnl=np.array([0.93533333, 0.752, 0.501, 0.22033333, 0.018, 0.00266667], dtype='float')
 	#ax2 = fit_scurves(ysim=[pbsl, ppnl], task='ssPro', showPSE=False, ax=ax2)
-	kwargs = {'line_colors':['Gray', 'Gray'], 'point_colors':colors}
+	#kwargs = {'line_colors':['Gray', 'Gray'], 'point_colors':colors}
 	
 	ax2 = basic_curves(ysim=[pbsl, emp_ProBSL], task='ssPro', showPSE=False, ax=ax2, line_colors=['Gray', 'Black'], point_colors=colors[::-1])#**kwargs)	
 
@@ -378,7 +378,7 @@ def basic_curves(ysim=None, task='ssRe', showPSE=True, ax=None, labels=None, pst
 		f.subplots_adjust(top=0.95, wspace=0.12, left=0.19, right=0.98, bottom=0.15)	
 		ax = f.add_subplot(111)
 	else:
-		ax=ax
+		pass
 
 	sns.despine()
 
