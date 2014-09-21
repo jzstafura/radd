@@ -5,6 +5,10 @@ from radd.simfx import sim_radd, sim_ss, sustained_integrator, integrator, thal
 import pandas as pd
 import numpy as np
 import os
+import matplotlib.pyplot as plt
+import seaborn as sns
+from progressbar import ProgressBar
+from threading import Thread
 
 
 #globals
@@ -76,10 +80,13 @@ def get_params(task='ssRe'):
 
 
 
-def fit_sx_ssv(df, ssvlist, task='ssRe', ntrials=50, depHyper=True):
+def fit_sx_ssv(df, ssvlist, task='ssRe', ntrials=20, depHyper=True, nsims=1):
 
-	p=utils.ProgressBar(len(ssvlist)*len(df['subj_idx'].unique()))
+	p=utils.ProgressBar(len(df['subj_idx'].unique()))
+	p2=utils.ProgressBar(len(ssvlist))
+	p3=utils.ProgressBar(nsims)
 
+	pth = utils.find_path()
 	sp={'mu_ss':0.0, 'ssTer':0.0, 'ssTer_var':0.0}
 
 	isx=0
@@ -89,49 +96,49 @@ def fit_sx_ssv(df, ssvlist, task='ssRe', ntrials=50, depHyper=True):
 		data=pd.read_csv(pth+"CoAx/SS/Proactive/Pro_AllData.csv")
 
 
-	fits_df=pd.DataFrame(columns=['subj_idx', 'mse_mu', 'mse_sem'], index=np.arange(len(df['subj_idx'].unique()))
+	fits_df=pd.DataFrame(columns=['subj_idx', 'mse_mu', 'mse_sem'], index=np.arange(len(df['subj_idx'].unique())))
 	
 	#all_sx_sims=[]
-	for sx, sxdf in df.groupby(['subj_idx']):
+	for sx, sxdf in df.groupby('subj_idx'):
+		
+		p.animate(isx)
 		
 		params=sxdf['mean']
 		params.index=sxdf['param']
 		a=params['a']*.1
 		z=a*params['z']
-		
-		#vlist=[params[drift]*.1 for drift in params.keys() if containsAll(list(drift), set(["v","("]))] 
-		#conditions=[c.split('(')[1][:-1] for c in params.keys() if '(' in c]
+
 		gp={'a':a, 'z':z, 'Ter':params['t'], 'eta':params['sv'], 'st':0.0, 'sz':0.0}
 
 		if 'Re' in task:
 			ssdlist=np.arange(.20, .45, .05)
-			pGo_list=np.ones(len(vlist))*.5
 			#only simulate using bsl params
 			vlist=[params['v(bsl)']*.1, params['v(bsl)']*.1]
+			pGo_list=np.ones(len(vlist))*.5
 			conditions=['bsl', 'bsl']
-		
-
+			tb=.650
 		else:
 			ssdlist=np.array([.450])
 			vlist=[params['v(Lo)']*.1, params['v(Hi)']*.1]
 			pGo_list=np.array([.2, .8])
-		
+			tb=.560
 		
 		sxdata=data[data['subj_idx']==sx]
 		
 		ssvdf_list=[]
-		for i, ssv in enumerate(ssvlist):
+		for ssvi, ssv in enumerate(ssvlist):
 			
-			p.animate(isx+i)
+			p2.animate(ssvi)
 
 			sp['mu_ss']=ssv
 
 			nsims_list=[]
-			for i in range(5):
+			for n in range(nsims):
+				
+				#p3.animate(n)
+				simn=simConditions(gp, sp, vlist, pGo_list=pGo_list, ssdlist=ssdlist, mfx=sim_radd, ntrials=ntrials, depHyper=depHyper, tb=tb, task=task, conditions=conditions, return_all_beh=True, visual=False)
 
-				simn=simConditions(gp, sp, vlist, pGo_list=pGo_list, ssdlist=ssdlist, mfx=sim_radd, ntrials=ntrials, depHyper=depHyper, tb=tb, task=task, conditions=conditions, return_all_beh=True, visual=visual)
-
-				simn['simn']=[i]*len(simn)
+				simn['simn']=[n]*len(simn)
 				nsims_list.append(simn)
 		
 			ssvdf=pd.concat(nsims_list)
@@ -142,7 +149,7 @@ def fit_sx_ssv(df, ssvlist, task='ssRe', ntrials=50, depHyper=True):
 		sx_sims=pd.concat(ssvdf_list)
 		sx_sims['subj_idx']=[sx]*len(sx_sims)
 
-		fits=re_mse(sx_sims, sxdata, sx=sx)
+		fits=re_mse(sx_sims, sxdata, sx, ssvlist)
 		fits_df.loc[isx]=fits
 		
 		isx+=1
@@ -152,7 +159,86 @@ def fit_sx_ssv(df, ssvlist, task='ssRe', ntrials=50, depHyper=True):
 	return fits_df
 
 
-def re_mse(simdf, data, sx=1):
+def fitsss_sx_ssv(df, task='ssRe', ntrials=20, depHyper=True, nsims=1):
+
+	p=utils.ProgressBar(len(df['subj_idx'].unique()))
+	p2=utils.ProgressBar(len(ssvlist))
+	p3=utils.ProgressBar(nsims)
+
+	pth = utils.find_path()
+	sp={'mu_ss':0.0, 'ssTer':0.0, 'ssTer_var':0.0}
+
+	isx=0
+	if 'Re' in task:
+		data=pd.read_csv(pth+"CoAx/SS/Reactive/Re_AllData.csv")
+	elif 'Pro' in task:
+		data=pd.read_csv(pth+"CoAx/SS/Proactive/Pro_AllData.csv")
+
+
+	fits_df=pd.DataFrame(columns=['subj_idx', 'mse_mu', 'mse_sem'], index=np.arange(len(df['subj_idx'].unique())))
+	
+	#all_sx_sims=[]
+	for sx, sxdf in df.groupby('subj_idx'):
+		
+		p.animate(isx)
+		
+		params=sxdf['mean']
+		params.index=sxdf['param']
+		a=params['a']*.1
+		z=a*params['z']
+
+		gp={'a':a, 'z':z, 'Ter':params['t'], 'eta':params['sv'], 'st':0.0, 'sz':0.0}
+
+		if 'Re' in task:
+			ssdlist=np.arange(.20, .45, .05)
+			#only simulate using bsl params
+			vlist=[params['v(bsl)']*.1, params['v(bsl)']*.1]
+			pGo_list=np.ones(len(vlist))*.5
+			conditions=['bsl', 'bsl']
+			tb=.650
+		else:
+			ssdlist=np.array([.450])
+			vlist=[params['v(Lo)']*.1, params['v(Hi)']*.1]
+			pGo_list=np.array([.2, .8])
+			tb=.560
+		
+		sxdata=data[data['subj_idx']==sx]
+		
+		ssvdf_list=[]
+		for ssvi, ssv in enumerate(ssvlist):
+			
+			p2.animate(ssvi)
+
+			sp['mu_ss']=ssv
+
+			nsims_list=[]
+			for n in range(nsims):
+				
+				#p3.animate(n)
+				simn=simConditions(gp, sp, vlist, pGo_list=pGo_list, ssdlist=ssdlist, mfx=sim_radd, ntrials=ntrials, depHyper=depHyper, tb=tb, task=task, conditions=conditions, return_all_beh=True, visual=False)
+
+				simn['simn']=[n]*len(simn)
+				nsims_list.append(simn)
+		
+			ssvdf=pd.concat(nsims_list)
+			ssvdf['ssv']=[ssv]*len(ssvdf)
+			
+			ssvdf_list.append(ssvdf)
+		
+		sx_sims=pd.concat(ssvdf_list)
+		sx_sims['subj_idx']=[sx]*len(sx_sims)
+
+		fits=re_mse(sx_sims, sxdata, sx, ssvlist)
+		fits_df.loc[isx]=fits
+		
+		isx+=1
+
+	fits_df.to_csv(pth+'CoAx/SS/ReSSV_Sims/ssv_sxfit_statistics.csv', index=False)
+
+	return fits_df
+
+
+def re_mse(simdf, data, sx, ssvlist):
 
 	sse=[]
 	mse_mu=[]
@@ -162,23 +248,25 @@ def re_mse(simdf, data, sx=1):
 	simdf['acc']=simdf['acc'].astype(float)
 
 
-	emp_curve=data.groupby('ssd').mean()['acc'].values[:-1]
-
+	emp_curve=data.groupby('ssd').mean()['acc'].values[:-1][::-1]
+	#print "sx: %s\n pstop: %s" % (str(sx), str(emp_curve))
 	for ssv, ssv_df in simdf.groupby('ssv'):
 		ptable = utils.makePivot(ssv_df.query('trial_type=="stop" & condition=="bsl"'), cols='simn', index='ssd', values='acc')
 		
 		for c in ptable.columns:
-			sse.append(np.sum((ptable[c]-emp_curve)**2))
+			sse.append(np.sum((ptable[c]-emp_curve[::-1])**2))
 
-	mse_mu.append(np.average(sse))
-	mse_sem.append(np.std(sse)/np.sqrt(len(sse)))
-	stop_curves.append(ptable.mean(axis=1).values[::-1])
-
-	f, ax = plt.subplots(1)
+		mse_mu.append(np.average(sse))
+		mse_sem.append(np.std(sse)/np.sqrt(len(sse)))
+		stop_curves.append(ptable.mean(axis=1).values[::-1])
+	
+	sns.set_context('poster')
+	sns.set_style('white')
+	f, ax = plt.subplots(1, figsize=(7, 5))
 	labels=[str(ssv) for ssv in ssvlist]
 	
-	ax = psy.basic_scurves(ysim=stop_curves, task='ssRe', showPSE=True, ax=ax, labels=labels)
-	ax = psy.basic_scurves(ysim=[emp_curve], task='ssRe', showPSE=True, ax=ax, labels=['bsl'], line_colors=['Gray'], point_colors=sns.blend_palette(["Purple", "Purple"]))
+	ax = psy.basic_curves(ysim=stop_curves[::-1], task='ssRe', showPSE=True, ax=ax, labels=labels)
+	ax = psy.basic_curves(ysim=[emp_curve], task='ssRe', showPSE=True, ax=ax, labels=['bsl'], line_colors=['Gray'], point_colors=sns.blend_palette(["Purple", "Purple"]), show_emp_line=True)
 	pth=utils.find_path()
 	plt.savefig(pth+'CoAx/SS/ReSSV_Sims/sx'+str(sx)+"_StopCurves_bySSV.png", format='png', dpi=300)
 

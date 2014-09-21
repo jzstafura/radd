@@ -350,18 +350,22 @@ def factorial_scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, ncurves=5,
 
 	return f
 
-def basic_curves(ysim=None, task='ssRe', showPSE=True, ax=None, labels=None, pstop=.05, **kwargs):
+def basic_curves(ysim=None, task='ssRe', showPSE=True, ax=None, labels=None, pstop=.05, show_emp_line=False, **kwargs):
 	
 	plt.ion()
 
 	sns.set(style='white', font="Helvetica")
+	xxlim=(-0.5, 10.5)
 
 	npoints=len(ysim[0])
-	
+	print npoints
 	if task=='ssRe':
-		x=np.array([400, 350, 300, 250, 200], dtype='float')
+		x=np.array([400, 350, 300, 250, 200], dtype='float')[::-1]
 		xsim=np.linspace(15, 50, 10000)
-		scale_factor=100
+		scale_factor=10
+		xxlabel='SSD (ms)'
+		xxticks=x/scale_factor
+		xxticklabels=np.arange(250, 550, 50)
 	else:
 		x=np.array([100, 80, 60, 40, 20, 0], dtype='float')
 		xsim=np.linspace(-5, 10, 10000)
@@ -383,8 +387,8 @@ def basic_curves(ysim=None, task='ssRe', showPSE=True, ax=None, labels=None, pst
 	sns.despine()
 
 	if 'line_colors' not in kwargs:
-		line_colors = sns.blend_palette(["LimeGreen", "Navy"], len(ysim))
-		point_colors = sns.blend_palette(["Black", "Black"], len(ysim))
+		line_colors = sns.blend_palette(["LimeGreen", "Navy"], npoints+1)
+		point_colors = sns.blend_palette(["Black", "Black"], npoints+1)
 	else:
 		line_colors = kwargs['line_colors']
 		point_colors = kwargs['point_colors']
@@ -410,35 +414,39 @@ def basic_curves(ysim=None, task='ssRe', showPSE=True, ax=None, labels=None, pst
 		idx = (np.abs(pxp - pstop)).argmin()
 
 		# Plot the results
-		if i==0:
-			ax.plot(xp, pxp, '-', lw=7.5, color=line_colors[i], alpha=.6, label=labels[i])
+		#if i==0:
+		
+		if show_emp_line:
+			ax.plot(x, y, '-', lw=5.5, color=line_colors[i], alpha=.7, label=labels[i])
 		else:
-			ax.plot(xp, pxp, '--', lw=7.5, color=line_colors[i], alpha=.45, label=labels[i])
+			ax.plot(xp, pxp, '-', lw=5.5, color=line_colors[i], alpha=.7, label=labels[i])
+		#else:
+		#	ax.plot(xp, pxp, '--', lw=7.5, color=line_colors[i], alpha=.45, label=labels[i])
 		
 		ci=0
 		#for i, ypoint in enumerate(y):
 		for ypoint in y:
-			if i==0:
-				plt.plot(x[ci], ypoint, marker='o', color=point_colors[ci], ms=19, lw=0, alpha=.55)
-			else:
-				plt.plot(x[ci], ypoint, marker='o', color=point_colors[ci], ms=22,  mfc='none', mew=2.5, mec=point_colors[ci],  lw=0, alpha=1)
+			#if i==0:
+			plt.plot(x[ci], ypoint, marker='o', color=point_colors[ci], ms=12, lw=0, alpha=.55)
+			#else:
+			#	plt.plot(x[ci], ypoint, marker='o', color=point_colors[ci], ms=22,  mfc='none', mew=2.5, mec=point_colors[ci],  lw=0, alpha=1)
 			ci+=1
 		#ax.plot(x, y, marker='o', color=colors[i], ms=10, lw=0)
 		#pse.append(xp[idx]/scale_factor)
 
-	if 'Re' in task:
-		plt.vlines(x=450, ymin=0, ymax=1, lw=20, color='k', alpha=.2)
+	#if 'Re' in task:
+	#	plt.vlines(x=450, ymin=0, ymax=1, lw=20, color='k', alpha=.2)
 
-	ax.set_xlim(xxlim)
-	ax.set_xlabel(xxlabel, fontsize=34)
+	ax.set_xlim(xxticks[0]-1.5, xxticks[-1]+1.5)
+	ax.set_xlabel(xxlabel, fontsize=20)
 	ax.set_xticks(xxticks)
-	ax.set_xticklabels(xxticklabels, fontsize=26)
+	ax.set_xticklabels(xxticklabels, fontsize=16)
 	ax.set_ylim(-0.05, 1.05)	
 
-	plt.setp(ax.get_yticklabels(), fontsize=26)	
-	ax.set_ylabel('P(Inhibit)', fontsize=34, labelpad=11) 
+	plt.setp(ax.get_yticklabels(), fontsize=16)	
+	ax.set_ylabel('P(Inhibit)', fontsize=20, labelpad=11) 
 	
-	#ax.legend(loc=0, fontsize=26)
+	ax.legend(loc=0, fontsize=16)
 	#yy, locs = plt.yticks()
 	#ll = ['%.2f' % a for a in yy]
 	#plt.yticks(yy, ll)

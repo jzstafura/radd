@@ -201,9 +201,62 @@ def chisqg(ydata,ymod,sd=None):
       	"""  
       	# Chi-square statistic (Bevington, eq. 6.9)  
 	if sd==None:  
-		chisq=numpy.sum((ydata-ymod)**2)  
+		chisq=np.sum((ydata-ymod)**2)  
 	else:  
-		chisq=numpy.sum( ((ydata-ymod)/sd)**2 )  
+		chisq=np.sum( ((ydata-ymod)/sd)**2 )  
 
 	return chisq 
+
+
+def ssvMinFunc(p, gp, sp, emp_curve):
+
+	simdf_list=[]
+	ssdlist=np.arange(.20, .45, .05)
+
+	sp['mu_ss'] =  -p['mu_ss'].value
+
+	for ssd in ssdlist:
+		sp['ssd']=ssd
+
+		out=ss.set_model(gParams=gp, sParams=sp, mfx=simfx.sim_radd, ntrials=400, timebound=.650, 
+			depHyper=True, visual=False, task='ssRe', return_all_beh=True, condition_str='bsl') 
+
+		simdf_list.append(out)
+
+	simdf=pd.concat(simdf_list)
+	simdf['acc']=simdf['acc'].astype(float)
+
+	stops=simdf.query('trial_type=="stop"').groupby('ssd').mean()['acc'].values
+
+	e=stops-emp_curve
+
+	print p['mu_ss'].value
+	print np.sum(e**2)
+	print stops
+
+	return e
+    
+def ssvOpt(params_df, data):
 	
+	for sx, sxdf in params_df.groupby('subj_idx'):
+		
+		print "%s\n"%str(sx)
+		sxdata=data[data['subj_idx']==sx]
+		emp_curve=sxdata.groupby('ssd').mean()['acc'].values[:-1]
+
+		params=sxdf['mean']
+		params.index=sxdf['param']
+
+		a=params['a']*.1
+		z=a*params['z']
+		v=params['v(bsl)']*.1
+
+		sp={'mu_ss':-1.0, 'ssTer':0.0, 'ssTer_var':0.0, 'pGo':0.0}
+		gp={'a':a, 'v':v, 'z':z, 'Ter':params['t'], 'eta':params['sv'], 'st':0.0, 'sz':0.0}
+
+		p=Parameters()
+		p.add('mu_ss', value=.6, min=0.4, max=1.5)
+		out = Minimizer(ssvMinFunc, p, fcn_args=(gp,sp,emp_curve), method='Nelder-Mead') 
+		out.fmin(maxfun=20)
+
+	return out
