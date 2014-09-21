@@ -9,6 +9,7 @@ import ss, psy, simfx
 from simfx import *
 from utils import find_path
 from patsy import dmatrix
+from lmfit import minimize, Parameters, Parameter, report_fit, Minimizer, fit_report
 
 def make_fit_ssv(gp, sp, task='ssPro'):
 
@@ -236,7 +237,7 @@ def ssvMinFunc(p, gp, sp, emp_curve):
 
 	return e
     
-def ssvOpt(params_df, data):
+def ssvOpt(params_df, data, ):
 	
 	for sx, sxdf in params_df.groupby('subj_idx'):
 		

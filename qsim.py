@@ -11,21 +11,6 @@ from progressbar import ProgressBar
 from threading import Thread
 
 
-#globals
-#a=.37; z=.5*a; Ter=.347; eta=.14; st=.0001; sz=.0001; s2=.01; xpo=[12, 12.29]
-#mu_ss=-2.17; ssTer=.099; ssRe_TB=.653; ssPro_TB=.6; nt=3000; sTB=.00001; ssTer_var=.0001
-#
-####ssRe
-#vbsl=0.611
-#vpnl=0.548
-#ssdlist=[.4, .35, .3, .25, .20]
-#
-####ssPro
-#pGo_list=[0, .2, .4, .6, .8, 1]
-#pSSD=.450
-#vlist_bsl=[0.073, 0.26, 0.4385, 0.601, 0.93, 1.09]
-#vlist_pnl=[0.05, 0.23, 0.425, 0.601, 0.93, 1.09
-
 def simConditions(gp, sp, vlist, pGo_list=[0, .2, .4, .6, .8, 1], ssdlist=[.450], mfx=simfx.sim_radd, depHyper=True, 
 	ntrials=1500, return_all=False, return_all_beh=False, tb=.560, task='ssProBSL', visual=False, conditions=[], integrate=False):
 
