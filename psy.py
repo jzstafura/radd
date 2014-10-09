@@ -197,11 +197,11 @@ def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, labels=None, plot_da
 		ysim.append(emp_pnl)
 	
 	colors = sns.blend_palette(["#00A37A", "#4D94B8"], len(ysim))
-	title="Stop Curves for Nested Model"
+	#title="Stop Curves for Nested Model"
 	#colors=sns.blend_palette(["#53FCAL", "#40a368"], len(ysim))
 	#colors = sns.blend_palette(["#6600CC", "#66CCFF"], len(ysim))
 	#title="Stop Curves for Independent Model"
-	
+	title="Emp v. Sim Stop Curves"
 	ai=0
 	for i, yi in enumerate(ysim):
 
@@ -227,7 +227,7 @@ def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, labels=None, plot_da
 			ie+=1
 		else:
 			ax.plot(xp, pxp, '-', lw=5.5, color=colors[i], alpha=.95-ai)
-			ax.plot(x, y, marker='o', color=colors[i], ms=9, lw=0, alpha=.95-ai)#, label=labels[i])
+			ax.plot(x, y, marker='o', color=colors[i], ms=9, lw=0, alpha=.95-ai, label=labels[i])
 			ai+=.02
 
 		pse.append(xp[idx]/scale_factor)
@@ -240,7 +240,7 @@ def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, labels=None, plot_da
 
 	plt.setp(ax.get_yticklabels(), fontsize=18)	
 	ax.set_ylabel('P(Inhibit)', fontsize=22, labelpad=8) 
-	ax.legend(loc=0, fontsize=12)
+	ax.legend(loc=0, fontsize=16)
 	ax.set_title(title, fontsize=22)
 	plt.tight_layout()
 	plt.savefig(pth+"CoAx/SS/"+title+".png", dpi=600)
@@ -358,7 +358,7 @@ def basic_curves(ysim=None, task='ssRe', showPSE=True, ax=None, labels=None, pst
 	xxlim=(-0.5, 10.5)
 
 	npoints=len(ysim[0])
-	print npoints
+
 	if task=='ssRe':
 		x=np.array([400, 350, 300, 250, 200], dtype='float')[::-1]
 		xsim=np.linspace(15, 50, 10000)

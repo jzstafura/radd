@@ -208,34 +208,26 @@ def chisqg(ydata,ymod,sd=None):
 
 	return chisq 
 
-
-def ssvMinFunc(p, gp, sp, emp_curve):
-
-	simdf_list=[]
-	ssdlist=np.arange(.20, .45, .05)
-
-	sp['mu_ss'] =  -p['mu_ss'].value
-
-	for ssd in ssdlist:
-		sp['ssd']=ssd
-
-		out=ss.set_model(gParams=gp, sParams=sp, mfx=simfx.sim_radd, ntrials=400, timebound=.650, 
-			depHyper=True, visual=False, task='ssRe', return_all_beh=True, condition_str='bsl') 
-
-		simdf_list.append(out)
-
-	simdf=pd.concat(simdf_list)
-	simdf['acc']=simdf['acc'].astype(float)
-
-	stops=simdf.query('trial_type=="stop"').groupby('ssd').mean()['acc'].values
-
-	e=stops-emp_curve
-
-	print p['mu_ss'].value
-	print np.sum(e**2)
-	print stops
-
-	return e
+def ssvMinFunc(p, gp, sp, ydata, ntrials=1000):
+    
+    ssdlist=np.arange(.20, .45, .05)
+    simdf_list=[]
+    sp['mu_ss'] =  -p['mu_ss'].value
+    
+    for ssd in ssdlist:
+        
+        sp['ssd']=ssd
+        out=ss.set_model(gParams=gp, sParams=sp, mfx=simfx.sim_radd, ntrials=ntrials, timebound=.650, 
+                         depHyper=True, visual=False, task='ssRe', return_all_beh=True, condition_str='bsl') 
+        simdf_list.append(out)
+    
+    simdf=pd.concat(simdf_list)
+    ymodel=simdf.groupby('ssd').mean()['acc'].values
+    
+    residuals=ymodel-ydata
+    #residuals = scp.sqrt(residuals ** 2 / ysigma ** 2)
+    
+    return residuals
     
 def ssvOpt(params_df, data, ):
 	
