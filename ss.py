@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from itertools import cycle
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from simfx import sim_radd, sim_ss, sustained_integrator, integrator, sim_ddm, thal, simIndependentPools
+from simfx import sim_radd, sustained_integrator, sim_ddm
 import utils
 
 sns.set(font="Helvetica")
@@ -36,11 +36,11 @@ def set_model(gParams=None, sParams=None, mfx=sim_radd, ntrials=100, timebound=0
 	pStop=1-sp['pGo']
 	gp, sp = get_intervar_ranges(parameters={'gp':gp, 'sp':sp})
 
-	if not return_all and not visual:
-		columns=['rt', 'choice', 'acc', 'trial_type', 'ssd', 'pGo']
-	else:
+	if return_all or visual:
 		columns=["rt","choice","acc","go_tsteps", "go_paths","ss_tsteps","thalamus",
 			"ss_paths", "len_go_tsteps","len_ss_tsteps","trial_type"]
+	else:
+		columns=['rt', 'choice', 'acc', 'trial_type', 'ssd', 'pGo']
 	
 	df = pd.DataFrame(columns=columns, index=np.arange(0,ntrials))
 
@@ -54,7 +54,8 @@ def set_model(gParams=None, sParams=None, mfx=sim_radd, ntrials=100, timebound=0
 
 		gp, sp, tb = update_params(gp, sp, timebound)
 		
-		sim_out = mfx(gp['mu'], gp['TR'], gp['a'], gp['ZZ'], mu_ss=sp['mu_ss'], ssd=sp['ss_On'], depHyper=depHyper, timebound=tb, exp_scale=exp_scale, ss_trial=ss_bool, sp=sp)	
+		sim_out = mfx(gp['mu'], gp['TR'], gp['a'], gp['ZZ'], ssv=sp['ssv'], ssd=sp['ss_On'], 
+			depHyper=depHyper, timebound=tb, exp_scale=exp_scale, ss_trial=ss_bool, sp=sp, visual=visual)	
 		
 		df.loc[i]=pd.Series({c:sim_out[c] for c in columns})
 
@@ -65,8 +66,8 @@ def set_model(gParams=None, sParams=None, mfx=sim_radd, ntrials=100, timebound=0
 	df[['rt', 'acc']]=df[['rt', 'acc']].astype(float)
 
 	if visual:
-
-		f=plot_decisions(df=df, pGo=sp['pGo'], ssd=sp['ssd'], timebound=timebound, exp_scale=exp_scale, task=task[:4], gp=gp, sp=sp, normp=False)
+		df['tparams']=[gp]*len(df)
+		f=plot_decisions(df=df, pGo=sp['pGo'], ssd=sp['ssd'], timebound=timebound, exp_scale=exp_scale, task=task[:4], normp=False)
 	
 	if return_all or return_all_beh:
 		return df
@@ -88,7 +89,7 @@ def anl(df):
 	
 	return pd.Series({'go_rt_cor':go_rt_cor, 'go_rt_all':go_rt_all, 'go_rt_err':go_rt_err, 'pstop':pstop, 'stop_acc':stop_acc})
 
-def plot_decisions(df, pGo=0.5, ssd=.300, timebound=0.653, task='ssRe', t_exp=False, exp_scale=[10,10], animate=False, normp=False, gp={}, sp={}):
+def plot_decisions(df, pGo=0.5, ssd=.300, timebound=0.653, task='ssRe', t_exp=False, exp_scale=[10,10], animate=False, normp=False):
 
 	plt.ion()
 	sns.set(style='white', font="Helvetica")
@@ -99,9 +100,9 @@ def plot_decisions(df, pGo=0.5, ssd=.300, timebound=0.653, task='ssRe', t_exp=Fa
 	#	print "list comprehension succeeded: plotting with mean sx params"
 	#except Exception:
 	#	print "list comprehension failed"
-	a=gp['a']
-	z=gp['z']
-	Ter=gp['Ter']
+	a=list(pd.Series(df['tparams']))[0]['a']
+	z=list(pd.Series(df['tparams']))[0]['z']
+	Ter=list(pd.Series(df['tparams']))[0]['Ter']
 	lb=0
 
 	if normp:
@@ -114,7 +115,7 @@ def plot_decisions(df, pGo=0.5, ssd=.300, timebound=0.653, task='ssRe', t_exp=Fa
 	ss_paths=list(pd.Series(df_sortSS['ss_paths']))
 	go_tsteps=list(pd.Series(df_sortGO['go_tsteps']))
 	go_paths=list(pd.Series(df_sortGO['go_paths']))
-	print len(go_tsteps)
+
 	choices=list(pd.Series(df_sorted['choice']))
 	
 	if 'Re' in task:
@@ -208,6 +209,7 @@ def plot_decisions(df, pGo=0.5, ssd=.300, timebound=0.653, task='ssRe', t_exp=Fa
 
 	return f
 
+
 def update_params(gp, sp, timebound):
 	
 	gp['TR'] = gp['Ter_lo'] + np.random.uniform() * (gp['Ter_hi'] - gp['Ter_lo'])
@@ -257,7 +259,7 @@ def get_default_parameters():
 	"""
 	
 	gp={'a':0.125, 'z':0.063, 'v':0.223, 'Ter':0.435, 'eta':0.133, 'st':0.183, 'sz':0.037}
-	sp={'mu_ss':-1.0, 'pGo':0.5, 'ssd':.450, 'ssTer':.100, 'ssTer_var':.05}
+	sp={'ssv':-1.0, 'pGo':0.5, 'ssd':.450, 'ssTer':.100, 'ssTer_var':.05}
 
 	return gp, sp
 

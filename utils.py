@@ -54,14 +54,6 @@ def sub_dists(data, nbins=18, save=True):
 			subj_fig.show()
 
 
-def wrapper(func, *args, **kwargs):
-	
-	def wrapped():
-		
-		return func(*args, **kwargs)
-	
-	return wrapped
-
 class PBinJ:
     
     def __init__(self, n, color='seagreen'):

@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 from __future__ import division
 from radd import ss, psy, simfx, utils, ft
-from radd.simfx import sim_radd, sim_ss, sustained_integrator, integrator, thal
+from radd.simfx import sim_radd, sim_ss, sustained_integrator
 import pandas as pd
 import numpy as np
 import os
 import matplotlib.pyplot as plt
 import seaborn as sns
-from progressbar import ProgressBar
 from threading import Thread
 
 
-def simConditions(gp, sp, vlist, pGo_list=[0, .2, .4, .6, .8, 1], ssdlist=[.450], mfx=simfx.sim_radd, depHyper=True, 
+def simConditions(gp, sp, vlist=[], pGo_list=[0, .2, .4, .6, .8, 1], ssdlist=[.450], mfx=simfx.sim_radd, depHyper=True, 
 	ntrials=1500, return_all=False, return_all_beh=False, tb=.560, task='ssProBSL', visual=False, conditions=[], integrate=False):
 
 	simdf_list=[]
@@ -22,7 +21,9 @@ def simConditions(gp, sp, vlist, pGo_list=[0, .2, .4, .6, .8, 1], ssdlist=[.450]
 			gp['v']=v
 			sp['pGo']=pGo_list[i]
 
-			out=ss.set_model(gParams=gp, sParams=sp, mfx=mfx, ntrials=ntrials, timebound=tb, depHyper=depHyper, visual=visual, task=task, return_all=return_all, return_all_beh=return_all_beh, condition_str=conditions[i]) 
+			out=ss.set_model(gParams=gp, sParams=sp, mfx=mfx, ntrials=ntrials, timebound=tb, 
+				depHyper=depHyper, visual=visual, task=task, return_all=return_all, 
+				return_all_beh=return_all_beh, condition_str=conditions[i]) 
 			
 			out['condition']=[conditions[i]]*len(out)
 			
@@ -31,35 +32,6 @@ def simConditions(gp, sp, vlist, pGo_list=[0, .2, .4, .6, .8, 1], ssdlist=[.450]
 	
 	return pd.concat(simdf_list)
 
-def get_params(task='ssRe'):
-
-	pth=utils.find_path()
-
-	if 'Re' in task:
-		params=pd.read_csv(pth+"CoAx/SS/HDDM/Reactive/vbias_full/vBP_SxStats.csv")
-		p=ft.stats_summary(params)['mean'].to_dict()
-		ssdlist=np.arange(.20, .45, .05)
-		vlist=[p['v(bsl)']*.1, p['v(pnl)']*.1]
-		conditions=['bsl', 'pnl']
-		pGo_list=np.ones(len(vlist))*.5
-		tb=.650
-	else:
-		params=pd.read_csv(pth+"CoAx/SS/HDDM/Proactive/vfull_sx/vfull_HiLo_550_SxStats.csv")
-		p=ft.stats_summary(params)['mean'].to_dict()
-		ssdlist=np.array([.450])
-		vlist=[p['v(Lo)']*.1, p['v(Hi)']*.1]
-		conditions=['Lo', 'Hi']
-		pGo_list=np.array([.2, .8])
-		tb=.560
-
-	#conditions=[c.split('(')[1][:-1] for c in p.keys() if '(' in c]
-
-	a=p['a']*.1; 
-	z=p['z']*a; 
-	gp={'a':a, 'z':z, 'Ter':p['t'], 'eta':p['sv'], 'st':0.000001, 'sz':0.000001}
-	sp={'ssTer':0.0, 'ssTer_var':0.0}
-
-	return gp, sp, vlist, pGo_list, ssdlist, conditions, tb
 
 
 
@@ -68,7 +40,7 @@ def fit_sx_ssv(df, ssvdict, task='ssRe', ntrials=20, depHyper=True, nsims=1, mfx
 	p=utils.PBinJ(len(df['subj_idx'].unique()))
 
 	pth = utils.find_path()
-	sp={'mu_ss':0.0, 'ssTer':0.0, 'ssTer_var':0.0}
+	sp={'ssv':0.0, 'ssTer':0.0, 'ssTer_var':0.0}
 
 	isx=-1
 	if 'Re' in task:
@@ -106,18 +78,19 @@ def fit_sx_ssv(df, ssvdict, task='ssRe', ntrials=20, depHyper=True, nsims=1, mfx
 			pGo_list=np.array([.2, .8])
 			tb=.560
 		
-		sp['mu_ss']=ssvdict[sx]
+		sp['ssv']=ssvdict[sx]
 		
 		nsims_list=[]
 		for n in range(nsims):
 
-			simn=simConditions(gp, sp, vlist, pGo_list=pGo_list, ssdlist=ssdlist, mfx=mfx, ntrials=ntrials, depHyper=depHyper, tb=tb, task=task, conditions=conditions, return_all_beh=True, visual=False)
+			simn=simConditions(gp, sp, vlist, pGo_list=pGo_list, ssdlist=ssdlist, mfx=mfx, ntrials=ntrials, depHyper=depHyper, 
+				tb=tb, task=task, conditions=conditions, return_all_beh=True, visual=False)
 
 			simn['simn']=[n]*len(simn)
 			nsims_list.append(simn)
 	
 		sx_sims=pd.concat(nsims_list)
-		sx_sims['ssv']=[sp['mu_ss']]*len(sx_sims)
+		sx_sims['ssv']=[sp['ssv']]*len(sx_sims)
 		sx_sims['subj_idx']=[sx]*len(sx_sims)
 
 		fits=re_mse(sx_sims, sxdata, sx, [ssvdict[sx]], plot=plot)
@@ -182,8 +155,9 @@ def sim_ssv_range(ssvlist=-np.arange(.5, 2.5, .5), params=None, task='ssRe', mfx
 		
 		p.animate(i)
 
-		sp['mu_ss']=ssv
-		simdf=simConditions(gp, sp, vlist, pGo_list=pGo_list, ssdlist=ssdlist, mfx=mfx, ntrials=ntrials, depHyper=depHyper, tb=tb, task='ssRe', conditions=conditions, return_all_beh=True, visual=visual)
+		sp['ssv']=ssv
+		simdf=simConditions(gp, sp, vlist, pGo_list=pGo_list, ssdlist=ssdlist, mfx=mfx, ntrials=ntrials, 
+			depHyper=depHyper, tb=tb, task='ssRe', conditions=conditions, return_all_beh=True, visual=visual)
 					
 		simdf['ssv']=[ssv]*len(simdf)
 		sims.append(simdf)
@@ -207,15 +181,17 @@ def plot_evs(bsl, pnl, bsl_GoRT, pnl_GoRT, task='ssRe'):
 
 
 def containsAll(strr, sett):
-    """ Check whether sequence str contains ALL of the items in set. """
-    return 0 not in [c in strr for c in sett]
+
+	""" Check whether sequence str contains ALL of the items in set. """
+
+	return 0 not in [c in strr for c in sett]
 
 
 def sim_sx(df, sp=None, ssdlist=[.450], pGo_list=[], mfx=simfx.thal, ntrials=500, tb=.560, task='ssProBSL', summarize=True):
 
 	simdf_list=[]
 	if sp is None:
-		sp={'mu_ss':-1.95, 'ssTer':0.0, 'ssTer_var':0.0}
+		sp={'ssv':-1.95, 'ssTer':0.0, 'ssTer_var':0.0}
 
 	for sx, sxdf in df.groupby(['subj_idx']):
 		
@@ -239,7 +215,8 @@ def sim_sx(df, sp=None, ssdlist=[.450], pGo_list=[], mfx=simfx.thal, ntrials=500
 			vlist=[params['v(Lo)']*.1, params['v(Hi)']*.1]
 			pGo_list=np.array([.2, .8])
 		
-		simdf=simConditions(gp, sp, vlist=vlist, ssdlist=ssdlist, pGo_list=pGo_list, mfx=mfx, tb=tb, ntrials=ntrials, conditions=conditions, return_all_beh=True)
+		simdf=simConditions(gp, sp, vlist=vlist, ssdlist=ssdlist, pGo_list=pGo_list, mfx=mfx, tb=tb, 
+			ntrials=ntrials, conditions=conditions, return_all_beh=True)
 		simdf['subj_idx']=[sx]*len(simdf)
 		
 		simdf_list.append(simdf)
