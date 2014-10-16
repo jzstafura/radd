@@ -11,6 +11,31 @@ from utils import find_path
 from patsy import dmatrix
 from lmfit import minimize, Parameters, Parameter, report_fit, Minimizer, fit_report
 
+def make_fit_ssv(gp, sp, task='ssPro'):
+
+	def fit_ssv(x, ssv):
+		
+		yhat=[]
+		for xi in x:
+			
+			if 'Re' in task:
+				sp['ssd']=xi
+				sp['pGo']=.5
+				output_index=2
+			else:
+				sp['pGo']=xi
+				sp['ssd']=.450
+				output_index=1
+
+			sp['mu_ss']=ssv
+
+			sim_data=ss.set_model(gParams=gp, sParams=sp, mfx=thal, ntrials=1000, timebound=.560, task=task)
+			
+			yhat.append(sim_data[output_ix])
+
+		return yhat
+
+	return fit_ssv
 
 
 def z_link_func(x, data):
@@ -22,7 +47,7 @@ def v_link_func(x, data):
     return x * stim
 
 def aic(model):
-	k = len(model.get_stochasticts())
+	k = len(model.get_stochastics())
 	logp = sum([x.logp for x in model.get_observeds()['node']])
 	return 2 * k - 2 * logp
 
@@ -54,7 +79,7 @@ def fit_sxhddm(data, depends_on={}, include=['a', 't', 'v'], bias=False, informa
 			continue
 
 		try:
-			m_sx.sample(60000, burn=20000, thin=4)
+			m_sx.sample(50000, burn=10000, thin=5)
 		
 		except Exception:
 			continue
@@ -74,10 +99,10 @@ def fit_sxhddm(data, depends_on={}, include=['a', 't', 'v'], bias=False, informa
 		dic_list.append(m_sx.dic)
 
 	allsx_df=pd.concat(subj_params)
-	allsx_df.to_csv(save_str+"_sxfits.csv", index=False)
+	allsx_df.to_csv(save_str+"_SxStats.csv", index=False)
 	
 	ic_df=pd.DataFrame({'aic':aic_list, 'bic':bic_list, 'dic':dic_list})
-	ic_df.to_csv(save_str+"_ic.csv")
+	ic_df.to_csv(save_str+"_FitRanks.csv")
 	
 	return allsx_df
 
@@ -141,6 +166,25 @@ def get_MeanHDDM(df, depends='v', plist=['a', 't', 'v'], zbias=False, inter_var=
 	return param_dict
 
 
+def init_ssfitfx(gp, sp, task='ssPro'):
+
+	if 'Re' in task:
+		x=np.arange(.25,.5, .05)
+		#y_bsl=
+		#y_pnl=
+
+		ydata=np.array([y_bsl, y_pnl])
+	else:
+		x=np.array([1.0,2.0], dtype='float') #np.arange(0, 1, .2)
+		y_hi=np.mean([0.931, 0.744, 0.471])
+		y_lo=np.mean([0.240, 0.034, 0.005])
+		ydata=np.array([y_hi, y_lo], dtype='float')
+
+	popt, pcov = curve_fit(make_fit_ssv(gp, sp, task=task), x, ydata, sp['mu_ss'])
+
+	return [popt, pcov]
+
+
 def chisqg(ydata,ymod,sd=None):
 
       	"""  
@@ -164,26 +208,34 @@ def chisqg(ydata,ymod,sd=None):
 
 	return chisq 
 
-def ssvMinFunc(p, gp, sp, ydata, ntrials=1000):
-    
-    ssdlist=np.arange(.20, .45, .05)
-    simdf_list=[]
-    sp['ssv'] =  -p['ssv'].value
-    
-    for ssd in ssdlist:
-        
-        sp['ssd']=ssd
-        out=ss.set_model(gParams=gp, sParams=sp, mfx=simfx.sim_radd, ntrials=ntrials, timebound=.650, 
-                         depHyper=True, visual=False, task='ssRe', return_all_beh=True, condition_str='bsl') 
-        simdf_list.append(out)
-    
-    simdf=pd.concat(simdf_list)
-    ymodel=simdf.groupby('ssd').mean()['acc'].values
-    
-    residuals=ymodel-ydata
-    #residuals = scp.sqrt(residuals ** 2 / ysigma ** 2)
-    
-    return residuals
+
+def ssvMinFunc(p, gp, sp, emp_curve):
+
+	simdf_list=[]
+	ssdlist=np.arange(.20, .45, .05)
+
+	sp['mu_ss'] =  -p['mu_ss'].value
+
+	for ssd in ssdlist:
+		sp['ssd']=ssd
+
+		out=ss.set_model(gParams=gp, sParams=sp, mfx=simfx.sim_radd, ntrials=400, timebound=.650, 
+			depHyper=True, visual=False, task='ssRe', return_all_beh=True, condition_str='bsl') 
+
+		simdf_list.append(out)
+
+	simdf=pd.concat(simdf_list)
+	simdf['acc']=simdf['acc'].astype(float)
+
+	stops=simdf.query('trial_type=="stop"').groupby('ssd').mean()['acc'].values
+
+	e=stops-emp_curve
+
+	print p['mu_ss'].value
+	print np.sum(e**2)
+	print stops
+
+	return e
     
 def ssvOpt(params_df, data, ):
 	
@@ -200,11 +252,11 @@ def ssvOpt(params_df, data, ):
 		z=a*params['z']
 		v=params['v(bsl)']*.1
 
-		sp={'ssv':-1.0, 'ssTer':0.0, 'ssTer_var':0.0, 'pGo':0.0}
+		sp={'mu_ss':-1.0, 'ssTer':0.0, 'ssTer_var':0.0, 'pGo':0.0}
 		gp={'a':a, 'v':v, 'z':z, 'Ter':params['t'], 'eta':params['sv'], 'st':0.0, 'sz':0.0}
 
 		p=Parameters()
-		p.add('ssv', value=.6, min=0.4, max=1.5)
+		p.add('mu_ss', value=.6, min=0.4, max=1.5)
 		out = Minimizer(ssvMinFunc, p, fcn_args=(gp,sp,emp_curve), method='Nelder-Mead') 
 		out.fmin(maxfun=20)
 

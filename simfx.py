@@ -5,7 +5,7 @@ import numpy as np
 import time
 from scipy import stats
 
-def sim_radd(mu, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10], depHyper=True, s2=.01, sp=None, visual=False, **kwargs):
+def sim_radd(mu, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10], depHyper=True, s2=.01, **kwargs):
 
 	"""
 
@@ -33,20 +33,15 @@ def sim_radd(mu, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=False, 
 	else:		# or
 		t=TR	 # start the time at TR
 	
- 	tau=.0005			# time per step of the diffusions
+ 	tau=.0001			# time per step of the diffusions
 	dx=np.sqrt(s2*tau)  		# dx is the step size up or down.
 	e=z		     		# starting point
 	e_ss=z				#arbitrary (positive) init value
 	ss_started=False
 	elist=[]; tlist=[]; elist_ss=[]; tlist_ss=[]
-	no_choice_yet=True; 
-	
-	if ss_trial: 
-		ttype='stop'
-	else: 
-		ttype='go'
+	no_choice_yet=True
 
-	while no_choice_yet: 
+	while no_choice_yet==True: 
 		
 		# increment the time
 		t = t + tau
@@ -72,20 +67,20 @@ def sim_radd(mu, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=False, 
 			# else move down
 			else:
 				e = e - dx
-			if visual:
-				elist.append(e)
-				tlist.append(t)
+			
+			elist.append(e)
+			tlist.append(t)
 			
 			if e>=a and no_choice_yet:
 				choice='go'
 				rt=t
-				#mu=0
+				mu=0
 				no_choice_yet=False
 
 		if ss_trial and t>=ssd:
-
+			
 			r_ss=np.random.random_sample()
-			p_ss=0.5*(1 + ssv*dx/s2)
+			p_ss=0.5*(1 + mu_ss*dx/s2)
 			
 			#test if stop signal has started yet.
 			#if not, then start at current state
@@ -93,7 +88,6 @@ def sim_radd(mu, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=False, 
 			if not ss_started and depHyper:
 				ss_started=True
 				e_ss=e
-				
 			else:
 				if r_ss < p_ss:
 					e_ss = e_ss + dx
@@ -104,24 +98,19 @@ def sim_radd(mu, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=False, 
 			if e_ss<=0 and no_choice_yet:
 				choice='stop'
 				rt=t
-				#ssv=0
+				mu_ss=0
 				no_choice_yet=False
-			if visual:
-				elist_ss.append(e_ss)
-				tlist_ss.append(t)
+
+			elist_ss.append(e_ss)
+			tlist_ss.append(t)
 	
-	if choice==ttype: 
-		acc=1.00
-	else: 
-		acc=0.00
+	evidence_lists=[elist, elist_ss]
+	timestep_lists=[tlist, tlist_ss]
 
-	return {'rt':rt, 'choice':choice, "go_paths":elist, 'ss_paths':elist_ss, 
-		"go_tsteps":tlist, "ss_tsteps":tlist_ss, 'thalamus':[0], 'trial_type':ttype,
-		'acc':acc, "len_go_tsteps":len(tlist), "len_ss_tsteps":len(tlist_ss), 'ssd':sp['ssd'],
-		'pGo':sp['pGo']}
+	return rt, choice, evidence_lists, timestep_lists, [0]
 
 
-def sim_radd_thal(mu, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10], depHyper=True, s2=.01, **kwargs):
+def sim_radd_thal(mu, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10], depHyper=True, s2=.01, **kwargs):
 
 	"""
 
@@ -159,16 +148,15 @@ def sim_radd_thal(mu, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=Fa
 	ss_ti=0; e_ti=0
 	no_choice_yet=True
 
-	while no_choice_yet==True: 
+	while t < timebound or no_choice_yet==False: 
 		
 		# increment the time
 		t = t + tau
 
-		if t>=timebound:
+		if t>=timebound and no_choice_yet:
 			choice='stop'
 			rt=timebound
 			no_choice_yet=False
-			break
 
 		if t>=TR:
 
@@ -200,7 +188,7 @@ def sim_radd_thal(mu, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=Fa
 		if ss_trial and t>=ssd:
 			
 			r_ss=np.random.random_sample()
-			p_ss=0.5*(1 + ssv*dx/s2)
+			p_ss=0.5*(1 + mu_ss*dx/s2)
 			
 			#test if stop signal has started yet.
 			#if not, then start at current state
@@ -218,7 +206,7 @@ def sim_radd_thal(mu, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=Fa
 			if e_ss<=0 and no_choice_yet:
 				choice='stop'
 				rt=t
-				ssv=0
+				mu_ss=0
 				no_choice_yet=False
 
 			elist_ss.append(e_ss)
@@ -236,7 +224,7 @@ def sim_radd_thal(mu, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=Fa
 	return rt, choice, evidence_lists, timestep_lists, ithalamus
 
 
-def thal(mu, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[12, 12.29], depHyper=True, s2=.01, **kwargs):
+def thal(mu, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[12, 12.29], depHyper=True, s2=.01, **kwargs):
 
 	"""
 	args:
@@ -285,7 +273,7 @@ def thal(mu, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_
 
 		if ss_trial and t >= ssd:
 			r_ss=np.random.random_sample()
-			p_ss=0.5*(1 + ssv*dx/s2)
+			p_ss=0.5*(1 + mu_ss*dx/s2)
 			
 			if r_ss < p_ss:
 				ss_ti = dx
@@ -312,7 +300,7 @@ def thal(mu, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_
 	return rt, choice, paths, timesteps, thalamus
 
 
-def simIndependentPools(mu, s2, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[12, 12.29], integrate=False, visual=False, depHyper=True, **kwargs):
+def simIndependentPools(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[12, 12.29], integrate=False, visual=False, depHyper=True, **kwargs):
 
 	tb=0
 	tau=.0001		# time per step of the diffusion
@@ -355,7 +343,7 @@ def simIndependentPools(mu, s2, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, s
 		if ss_trial and t >= ssd:
 
 			r_ss=np.random.random_sample()
-			p_ss=0.5*(1 + ssv*dx/s2)
+			p_ss=0.5*(1 + mu_ss*dx/s2)
 
 			if r_ss < p_ss:
 				ss_ti = dx
@@ -373,7 +361,7 @@ def simIndependentPools(mu, s2, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, s
 
 		if thalamus[-1]+hyperthal[-1]<=b and no_choice_yet:
 			rt = 0
-			ssv=0
+			mu_ss=0
 			choice = 'stop'
 			no_choice_yet = False
 
@@ -394,7 +382,7 @@ def simIndependentPools(mu, s2, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, s
 
 
 
-def sustained_integrator(mu, s2, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10], integrate=False):
+def sustained_integrator(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10], integrate=False):
 
 	"""
 
@@ -479,7 +467,7 @@ def sustained_integrator(mu, s2, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, 
 		if ss_trial and t>=ssd:
 			
 			r_ss=np.random.random_sample()
-			p_ss=0.5*(1 + ssv*dx/s2)
+			p_ss=0.5*(1 + mu_ss*dx/s2)
 			
 			#test if stop signal has started yet.
 			#if not, then start at current position of "go/nogo" DV: e
@@ -529,7 +517,7 @@ def sustained_integrator(mu, s2, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, 
 	return t, choice, evidence_lists, timestep_lists, ithalamus
 
 
-def integrator(mu, s2, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10]):
+def integrator(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10]):
 
 	"""
 
@@ -612,7 +600,7 @@ def integrator(mu, s2, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=F
 		if ss_trial and t>=ssd:
 			
 			r_ss=np.random.random_sample()
-			p_ss=0.5*(1 + ssv*dx/s2)
+			p_ss=0.5*(1 + mu_ss*dx/s2)
 			#ti=-dx
 			#test if stop signal has started yet.
 			#if not, then start at current position of "go/nogo" DV: e
@@ -654,7 +642,7 @@ def integrator(mu, s2, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=F
 	return t, choice, evidence_lists, timestep_lists, ithalamus
 
 
-def sim_ss(mu, s2, TR, a, z, ssv=-6, ssd=.450, timebound=0.653, ss_trial=False, **kwargs):
+def sim_ss(mu, s2, TR, a, z, mu_ss=-6, ssd=.450, timebound=0.653, ss_trial=False, **kwargs):
 
 	"""
 	
@@ -719,7 +707,7 @@ def sim_ss(mu, s2, TR, a, z, ssv=-6, ssd=.450, timebound=0.653, ss_trial=False, 
 		if ss_trial and t>=ssd:
 
 			r_ss=np.random.random_sample()
-			p_ss=0.5*(1 + ssv*dx/s2)
+			p_ss=0.5*(1 + mu_ss*dx/s2)
 			
 			#test if stop signal has started yet.
 			#if not, then start at current position of "go/nogo" DV: e
@@ -752,7 +740,7 @@ def sim_ss(mu, s2, TR, a, z, ssv=-6, ssd=.450, timebound=0.653, ss_trial=False, 
 
 	return t, choice, evidence_lists, timestep_lists, 1.0
 
-def sim_ddm(mu, s2, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10], integrate=False):
+def sim_ddm(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10], integrate=False):
 
 	"""
 
@@ -832,7 +820,7 @@ def sim_ddm(mu, s2, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=Fals
 		if ss_trial and t>=ssd:
 			
 			r_ss=np.random.random_sample()
-			p_ss=0.5*(1 + ssv*dx/s2)
+			p_ss=0.5*(1 + mu_ss*dx/s2)
 			
 			#test if stop signal has started yet.
 			#if not, then start at current position of "go/nogo" DV: e
@@ -882,7 +870,7 @@ def sim_ddm(mu, s2, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=Fals
 	return t, choice, evidence_lists, timestep_lists, ithalamus
 
 
-def sim_ssex(mu, s2, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10]):
+def sim_ssex(mu, s2, TR, a, z, mu_ss=-1.6, ssd=.450, timebound=0.653, ss_trial=False, exp_scale=[10,10]):
 
 
 	#DEPRECATED METHOD
@@ -940,7 +928,7 @@ def sim_ssex(mu, s2, TR, a, z, ssv=-1.6, ssd=.450, timebound=0.653, ss_trial=Fal
 		# If mu is greater than 0, the diffusion tends to move up.
 		# If mu is less than 0, the diffusion tends to move down.
 		p=0.5*(1 + mu*dx/s2)
-		p_ss=0.5*(1 + ssv*dx/s2)
+		p_ss=0.5*(1 + mu_ss*dx/s2)
 		
 		#if r < p then move up
 		if r < p:
