@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from itertools import cycle
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from simfx import sim_radd, sim_ss, sustained_integrator, integrator, sim_ddm, thal, simIndependentPools
+from simfx import sim_radd, sustained_integrator, sim_ddm
 import utils
 
 sns.set(font="Helvetica")
@@ -35,8 +35,13 @@ def set_model(gParams=None, sParams=None, mfx=sim_radd, ntrials=100, timebound=0
 
 	pStop=1-sp['pGo']
 	gp, sp = get_intervar_ranges(parameters={'gp':gp, 'sp':sp})
-	columns=["rt","choice","acc","go_tsteps", "go_paths","ss_tsteps","thalamus",
-		"ss_paths","tparams","len_go_tsteps","len_ss_tsteps","trial_type"]
+
+	if return_all or visual:
+		columns=["rt","choice","acc","go_tsteps", "go_paths","ss_tsteps","thalamus",
+			"ss_paths", "len_go_tsteps","len_ss_tsteps","trial_type"]
+	else:
+		columns=['rt', 'choice', 'acc', 'trial_type', 'ssd', 'pGo']
+	
 	df = pd.DataFrame(columns=columns, index=np.arange(0,ntrials))
 
 	for i in range(ntrials):
@@ -49,33 +54,25 @@ def set_model(gParams=None, sParams=None, mfx=sim_radd, ntrials=100, timebound=0
 
 		gp, sp, tb = update_params(gp, sp, timebound)
 		
-		rt, choice, paths, tsteps, ithalamus = mfx(gp['mu'], gp['TR'], gp['a'], gp['ZZ'], mu_ss=sp['mu_ss'], ssd=sp['ss_On'], depHyper=depHyper, timebound=tb, exp_scale=exp_scale, ss_trial=ss_bool)	
+		sim_out = mfx(gp['mu'], gp['TR'], gp['a'], gp['ZZ'], ssv=sp['ssv'], ssd=sp['ss_On'], 
+			depHyper=depHyper, timebound=tb, exp_scale=exp_scale, ss_trial=ss_bool, sp=sp, visual=visual)	
 		
-		if choice==trial_type: 
-			acc=1.0
-		else: 
-			acc=0.0
-		
-		df.loc[i]=pd.Series({"rt":rt,"choice":choice,"acc":acc,"go_tsteps":tsteps[0], "go_paths":paths[0],"ss_tsteps":tsteps[1],"thalamus":ithalamus,"ss_paths":paths[1],"tparams":gp,"len_go_tsteps":len(tsteps[0]),"len_ss_tsteps":len(tsteps[1]),"trial_type":trial_type})
+		df.loc[i]=pd.Series({c:sim_out[c] for c in columns})
+
 		
 	if condition_str:
 		df['condition']=[condition_str]*len(df)
-	
-	df['ssd']= [sp['ssd']]*len(df)
-	df['pGo']=[sp['pGo']]*len(df)
-
-	df_beh=df[['rt', 'choice', 'acc', 'trial_type', 'ssd', 'pGo']]
+		
+	df[['rt', 'acc']]=df[['rt', 'acc']].astype(float)
 
 	if visual:
-		
+		df['tparams']=[gp]*len(df)
 		f=plot_decisions(df=df, pGo=sp['pGo'], ssd=sp['ssd'], timebound=timebound, exp_scale=exp_scale, task=task[:4], normp=False)
-	if return_all:
+	
+	if return_all or return_all_beh:
 		return df
-	elif return_all_beh:
-		return df_beh
 	else:
-		sim_data=anl(df_beh)
-		return sim_data
+		return anl(df)
 
 def anl(df):
 	
@@ -212,6 +209,7 @@ def plot_decisions(df, pGo=0.5, ssd=.300, timebound=0.653, task='ssRe', t_exp=Fa
 
 	return f
 
+
 def update_params(gp, sp, timebound):
 	
 	gp['TR'] = gp['Ter_lo'] + np.random.uniform() * (gp['Ter_hi'] - gp['Ter_lo'])
@@ -261,7 +259,7 @@ def get_default_parameters():
 	"""
 	
 	gp={'a':0.125, 'z':0.063, 'v':0.223, 'Ter':0.435, 'eta':0.133, 'st':0.183, 'sz':0.037}
-	sp={'mu_ss':-1.0, 'pGo':0.5, 'ssd':.450, 'ssTer':.100, 'ssTer_var':.05}
+	sp={'ssv':-1.0, 'pGo':0.5, 'ssd':.450, 'ssTer':.100, 'ssTer_var':.05}
 
 	return gp, sp
 
@@ -409,51 +407,3 @@ def concat_output(tasks=None, full=False):
 	alldf.to_csv(base_str+'_all.csv', index=False)
 
 	return alldf
-	
-
-def conditions(cparams, ntrials=100, analyze=True, visual=True, animate=False, t_exp=False, exp_scale=[10, 10]):
-	"""
-	conditions:		Simulates multiple go/stop decisions based on nested parameter dictionaries, one for each condition.
-					Produces multiple figures which are saved to wdir and returns a df with all simulated trials
-
-	args:
-		cparams (dict[dicts]):			list of nested dictionaries containing ddm parameters, one dictionary per condition to simulate
-										ex: cparams={'Condition1':{'a':0.24, 'z':0.12, 'v':0.20, 'Ter':0.150, 'eta':0.01, 'st':0.0183, 'sz':0.0137, 's2':.01},
-														'Condition2':{'a':0.24, 'z':0.12, 'v':0.28, 'Ter':0.450, 'eta':0.01, 'st':0.0183, 'sz':0.0137, 's2':.01}}
-		ntrials (int):					number of trials to sim
-		analyze (bool):					to return pivot tables for RT and accuracy
-		visual	(bool):					to plot simulated diffusion traces
-		animate	(bool):					to animate simulated diffusion traces
-		t_exp	(bool):					to include an eased exponential time bias
-		exp_scale (list):				list w/ 2 elements for scaling the [1] numerator [2] and the denominator of the eased exponential function
-
-
-	returns:
-		simdf (pd.DataFrame):			df containing all simulated data from each condition
-
-	"""
-
-	gpReBSL={'SSD200': { }, 'SSD250': { }, 'SSD300': { }, 'SSD350': { }, 'SSD400': { }}
-	gpRePNL={'SSD200': { }, 'SSD250': { }, 'SSD300': { }, 'SSD350': { }, 'SSD400': { }}
-	gpPrBSL={'pG100': { }, 'pG80': { }, 'pG60': { }, 'pG40': { }, 'pG20': { }, 'pG0': { }}
-	gpPrPNL={'pG100': { }, 'pG80': { }, 'pG60': { }, 'pG40': { }, 'pG20': { }, 'pG0': { }}
-
-	spReBSL={'SSD200': { }, 'SSD250': { }, 'SSD300': { }, 'SSD350': { }, 'SSD400': { }}
-	spRePNL={'SSD200': { }, 'SSD250': { }, 'SSD300': { }, 'SSD350': { }, 'SSD400': { }}
-	spPrBSL={'pG100': { }, 'pG80': { }, 'pG60': { }, 'pG40': { }, 'pG20': { }, 'pG0': { }}
-	spPrPNL={'pG100': { }, 'pG80': { }, 'pG60': { }, 'pG40': { }, 'pG20': { }, 'pG0': { }}
-
-	conds=[[gpReBSL,spReBSL], [gpRePNL, spRePNL], [gpPrBSL, spPrBSL], [gpPrPNL, spPrPNL]]
-
-	#cp=cparams
-	for gpsp in conds:
-
-		gp=gpsp[0]
-		sp=gpsp[1]
-
-		df=ss.set_model(gParams=gp, sParams=sp, ntrials=200, t_exp=True, exp_scale=[12, 13.4], analyze=False, visual=True)
-
-
-
-
-		params=cp[cond]
