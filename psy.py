@@ -64,7 +64,7 @@ def fit_scurves(ysim=None, task='ssRe', showPSE=True, ax=None, labels=None, **kw
 
 	if ax is None:
 
-		f = plt.figure(figsize=(8,9.5)) 
+		f = plt.figure(figsize=(10,7.5)) 
 		f.subplots_adjust(top=0.95, wspace=0.12, left=0.19, right=0.98, bottom=0.15)	
 		ax = f.add_subplot(111)
 
@@ -158,17 +158,31 @@ def fit_scurves(ysim=None, task='ssRe', showPSE=True, ax=None, labels=None, **kw
 	return ax
 
 
-def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, labels=None, plot_data=False):
+def scurves(ysim=[], task='ssRe', pstop=.5, showPSE=True, labels=None, plot_data=False):
 
 	#plt.ion()
 	pth=utils.find_path()
+	
+	if 'ssRe' in task:
 
+		xxlabel='SSD (ms)'
+		xxticklabels=np.arange(200, 500, 50)
+		emp_bsl=np.array([.994, .982, .896, .504, .103], dtype='float')[::-1]
+		emp_pnl=np.array([.993, .985, .925, .594, .181], dtype='float')[::-1]
+		#labels=['BSL', 'PNL']
+
+	if plot_data:
+		ie=0
+		ysim.append(emp_bsl)
+		ysim.append(emp_pnl)
+	
 	sns.set(style='white', font="Helvetica")
 	npoints=len(ysim[0])
 	xsim=np.linspace(-5, 110, 10000)
 	scale_factor=10
 
 	x=np.array(np.linspace(1, 100, npoints), dtype='float')
+	#x=np.array([400, 350, 300, 250, 200], dtype='float')[::-1]
 	xxticks=x/scale_factor
 	xxticklabels=x/100
 	xxlim=(-.5, 11)
@@ -186,7 +200,7 @@ def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, labels=None, plot_da
 	x=res(-x,lower=x[-1]/10, upper=x[0]/10)
 
 	pse=[]
-	f = plt.figure(figsize=(6, 7)) 
+	f = plt.figure(figsize=(6, 5)) 
 	f.subplots_adjust(top=0.95, wspace=0.12, left=0.19, right=0.98, bottom=0.15)	
 	ax = f.add_subplot(111)
 
@@ -196,12 +210,13 @@ def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, labels=None, plot_da
 		ysim.append(emp_bsl)
 		ysim.append(emp_pnl)
 	
-	colors = sns.blend_palette(["#00A37A", "#4D94B8"], len(ysim))
-	title="Stop Curves for Nested Model"
+	#colors = sns.blend_palette(["#00A37A", "#4D94B8"], len(ysim))
+	colors=['FireBrick', "#00A37A", 'Purple']
+	#title="Stop Curves: RaDD v. DDM"
 	#colors=sns.blend_palette(["#53FCAL", "#40a368"], len(ysim))
 	#colors = sns.blend_palette(["#6600CC", "#66CCFF"], len(ysim))
-	#title="Stop Curves for Independent Model"
-	
+	#title="Reactive BSL: Radd vs. DDM"
+	#title="Emp v. Sim Stop Curves"
 	ai=0
 	for i, yi in enumerate(ysim):
 
@@ -222,12 +237,12 @@ def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, labels=None, plot_da
 		if plot_data and (i==len(ysim)-1 or i==len(ysim)-2):
 			ecolors=['Navy', 'FireBrick']#, '#E60000']; 
 			elabels=['Data (BSL)', 'Data (PNL)']
-			ax.plot(xp, pxp, '-', lw=8, color=ecolors[ie], alpha=.9)
-			ax.plot(x, y, marker='o', color=ecolors[ie], ms=13, lw=0, alpha=.4, label=elabels[ie])
+			ax.plot(xp, pxp, '-', lw=5.0, color=ecolors[ie], alpha=.9)
+			ax.plot(x, y, marker='o', color=ecolors[ie], ms=10, lw=0, alpha=.4, label=elabels[ie])
 			ie+=1
 		else:
-			ax.plot(xp, pxp, '-', lw=5.5, color=colors[i], alpha=.95-ai)
-			ax.plot(x, y, marker='o', color=colors[i], ms=9, lw=0, alpha=.95-ai)#, label=labels[i])
+			ax.plot(xp, pxp, '-', lw=6.0, color=colors[i], alpha=.95-ai)
+			ax.plot(x, y, marker='o', color=colors[i], ms=9, lw=0, alpha=.95-ai, label=labels[i])
 			ai+=.02
 
 		pse.append(xp[idx]/scale_factor)
@@ -240,11 +255,14 @@ def scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, labels=None, plot_da
 
 	plt.setp(ax.get_yticklabels(), fontsize=18)	
 	ax.set_ylabel('P(Inhibit)', fontsize=22, labelpad=8) 
-	ax.legend(loc=0, fontsize=12)
-	ax.set_title(title, fontsize=22)
+	ax.legend(loc=0, fontsize=14)
+	#ax.set_title(title, fontsize=20)
 	plt.tight_layout()
-	plt.savefig(pth+"CoAx/SS/"+title+".png", dpi=600)
+	#plt.savefig(pth+"CoAx/SS/"+title+".png", dpi=600)
 
+	plt.savefig(pth+"CoAx/SS/ReactiveDataSCurvesXXX.png", dpi=300)
+
+	return pse
 
 
 def factorial_scurves(ysim=None, task='ssRe', pstop=.5, showPSE=True, ncurves=5, labels=None, predict_brain=False):
@@ -358,7 +376,7 @@ def basic_curves(ysim=None, task='ssRe', showPSE=True, ax=None, labels=None, pst
 	xxlim=(-0.5, 10.5)
 
 	npoints=len(ysim[0])
-	print npoints
+
 	if task=='ssRe':
 		x=np.array([400, 350, 300, 250, 200], dtype='float')[::-1]
 		xsim=np.linspace(15, 50, 10000)
@@ -630,7 +648,7 @@ def predict_neural_integrator(m={}, arr=np.arange(0, 1, .1), task='ssReBSL', plo
 
 		for ssd in ssdlist:
 			
-			sp={'mu_ss':m['sp']['mu_ss'], 'pGo':.5, 'ssd':ssd, 'ssTer':m['sp']['ssTer'], 'ssTer_var':m['sp']['ssTer_var']}
+			sp={'ssv':m['sp']['ssv'], 'pGo':.5, 'ssd':ssd, 'ssTer':m['sp']['ssTer'], 'ssTer_var':m['sp']['ssTer_var']}
 			gp={'a':m['gp']['a'], 'z':m['gp']['z'], 'v':m['gp']['v'], 'Ter':m['gp']['Ter'], 'st':m['gp']['st'], 'sz':m['gp']['sz'], 
 				'eta':m['gp']['eta'], 's2':m['gp']['s2']}
 
